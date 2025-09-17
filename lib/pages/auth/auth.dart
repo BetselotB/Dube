@@ -1,10 +1,9 @@
 // lib/pages/auth_page.dart
+import 'package:dube/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatefulWidget {
-  final String languageCode; // 'en' or 'am'
-
-  const AuthPage({super.key, required this.languageCode});
+  const AuthPage({super.key});
 
   @override
   State<AuthPage> createState() => _AuthPageState();
@@ -15,15 +14,12 @@ enum AuthMode { login, signup }
 class _AuthPageState extends State<AuthPage> {
   AuthMode _mode = AuthMode.login;
 
-  // simple controllers (logic to be added later)
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmController = TextEditingController();
+  // controllers
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmController = TextEditingController();
 
   bool _obscure = true;
-
-  // simple localized strings (expand later)
-  String t(String en, String am) => widget.languageCode == 'am' ? am : en;
 
   @override
   void dispose() {
@@ -33,17 +29,18 @@ class _AuthPageState extends State<AuthPage> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit(AppLocalizations t) {
     // UI-only: show a snackbar to signify "would attempt auth"
-    final action = _mode == AuthMode.login ? t('Logging in', 'ይግቡ') : t('Creating account', 'መለያ እየፈጠረ');
+    final action = _mode == AuthMode.login ? t.login : t.signup;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$action...')));
     // connect your auth logic here later
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
     return Scaffold(
-      // Use gentle background gradient for a modern, friendly look
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -59,9 +56,9 @@ class _AuthPageState extends State<AuthPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo
+                  // Logo / title
                   Text(
-                    'ዱቤ',
+                    t.appTitle,
                     style: TextStyle(
                       fontSize: 44,
                       fontWeight: FontWeight.bold,
@@ -69,6 +66,7 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                   ),
                   const SizedBox(height: 18),
+
                   // Segmented control for login / signup
                   Container(
                     padding: const EdgeInsets.all(4),
@@ -78,12 +76,13 @@ class _AuthPageState extends State<AuthPage> {
                     ),
                     child: Row(
                       children: [
-                        _buildModeButton(AuthMode.login, t('Login', 'ግባ')),
-                        _buildModeButton(AuthMode.signup, t('Sign up', 'መመዝገብ')),
+                        _buildModeButton(AuthMode.login, t.login),
+                        _buildModeButton(AuthMode.signup, t.signup),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
+
                   // Card with form
                   Card(
                     elevation: 6,
@@ -94,13 +93,13 @@ class _AuthPageState extends State<AuthPage> {
                         children: [
                           _buildTextField(
                             controller: _emailController,
-                            hint: t('Email', 'ኢሜይል'),
+                            hint: t.email,
                             keyboardType: TextInputType.emailAddress,
                           ),
                           const SizedBox(height: 12),
                           _buildTextField(
                             controller: _passwordController,
-                            hint: t('Password', 'የይለፍ ቃል'),
+                            hint: t.password,
                             obscure: _obscure,
                             suffix: IconButton(
                               icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
@@ -111,7 +110,7 @@ class _AuthPageState extends State<AuthPage> {
                             const SizedBox(height: 12),
                             _buildTextField(
                               controller: _confirmController,
-                              hint: t('Confirm password', 'የይለፍ ቃልን ያረጋግጡ'),
+                              hint: t.confirmPassword,
                               obscure: _obscure,
                             ),
                           ],
@@ -120,33 +119,37 @@ class _AuthPageState extends State<AuthPage> {
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: _submit,
+                              onPressed: () => _submit(t),
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
-                              child: Text(_mode == AuthMode.login ? t('Login', 'ግባ') : t('Create account', 'መግባት')),
+                              child: Text(_mode == AuthMode.login ? t.login : t.createAccount),
                             ),
                           ),
                           const SizedBox(height: 14),
+
+                          // Divider with "or"
                           Row(
                             children: [
                               Expanded(child: Divider(color: Colors.grey.shade300)),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
-                                child: Text(t('or', 'ወይም'), style: TextStyle(color: Colors.black54)),
+                                child: Text(t.or, style: const TextStyle(color: Colors.black54)),
                               ),
                               Expanded(child: Divider(color: Colors.grey.shade300)),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          // Social / placeholder button(s)
+
+                          // Social / placeholder button
                           SizedBox(
                             width: double.infinity,
                             height: 46,
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(t('Google sign-in placeholder', 'Google ግንኙነት'))));
+                                  SnackBar(content: Text(t.googleSignInPlaceholder)),
+                                );
                               },
                               icon: Image.network(
                                 'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
@@ -154,13 +157,14 @@ class _AuthPageState extends State<AuthPage> {
                                 height: 20,
                                 errorBuilder: (_, __, ___) => const Icon(Icons.login, size: 20),
                               ),
-                              label: Text(t('Continue with Google', 'ከGoogle ይክናቸው')),
+                              label: Text(t.continueWithGoogle),
                             ),
                           ),
                           const SizedBox(height: 10),
+
                           // small hint
                           Text(
-                            t('By continuing you agree to our Terms & Privacy.', 'በመቀጠል የተግባር መመሪያዎቻችንን ታረጋግጣሉ።'),
+                            t.termsHint,
                             style: const TextStyle(fontSize: 12, color: Colors.black45),
                             textAlign: TextAlign.center,
                           ),

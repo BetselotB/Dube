@@ -1,9 +1,17 @@
 // lib/main.dart
+import 'package:dube/l10n/app_localizations.dart';
 import 'package:dube/pages/choose%20language/choose_language.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'core/locale_provider.dart'; // make sure this file exists
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => LocaleProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,6 +19,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
+
     return MaterialApp(
       title: 'Dube',
       debugShowCheckedModeBanner: false,
@@ -19,6 +29,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         scaffoldBackgroundColor: Colors.white,
       ),
+      locale: localeProvider.locale, // <-- set locale from provider
+      supportedLocales: const [
+        Locale('en'),
+        Locale('am'),
+      ],
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: const SplashPage(),
     );
   }
@@ -46,7 +62,6 @@ class _SplashPageState extends State<SplashPage>
       duration: const Duration(milliseconds: 1400),
     )..repeat();
 
-    // Determine width of logo for bar sizing
     const textStyle = TextStyle(
       fontSize: 56,
       fontWeight: FontWeight.bold,
@@ -58,9 +73,7 @@ class _SplashPageState extends State<SplashPage>
     tp.layout();
     _textWidth = tp.width;
 
-    // Small delay to let the animation show — then navigate to language selector
     Future.delayed(const Duration(milliseconds: 1400), () {
-      // Use pushReplacement so splash is removed from stack
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LanguageSelector()),
@@ -103,9 +116,7 @@ class _SplashPageState extends State<SplashPage>
                   borderRadius: BorderRadius.circular(barHeight / 2),
                   child: Stack(
                     children: [
-                      // Black track
                       Container(color: Colors.black),
-                      // Animated sliding indicator (subtle white highlight)
                       AnimatedBuilder(
                         animation: _controller,
                         builder: (context, child) {

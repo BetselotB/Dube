@@ -1,0 +1,19 @@
+{
+  "@@locale": "am",
+  "appTitle": "ዱቤ",
+  "selectLanguage": "ቋንቋ ይምረጡ",
+  "chooseYourLanguage": "እባክዎ ቋንቋዎን ይምረጡ",
+  "next": "ቀጣይ",
+  "waitingDirection": "እየጠበቀ ነው...",
+  "login": "ግባ",
+  "signup": "መመዝገብ",
+  "email": "ኢሜይል",
+  "password": "የይለፍ ቃል",
+  "confirmPassword": "የይለፍ ቃልን ያረጋግጡ",
+  "continueWithGoogle": "ከGoogle ቀጥለው",
+  "or": "ወይም",
+  "termsHint": "በመቀጠል የመመሪያችንን እና ፕራይቬሲን ታረጋግጣሉ።",
+  "createAccount": "መለያ ፍጠር",
+  "googleSignInPlaceholder": "Google ግንኙነት"
+
+}

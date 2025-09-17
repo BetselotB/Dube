@@ -1,0 +1,22 @@
+{
+  "@@locale": "en",
+  "appTitle": "Dube App",
+  "login": "Login",
+  "signup": "Sign Up",
+  "createAccount": "Create Account",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "or": "or",
+  "continueWithGoogle": "Continue with Google",
+  "googleSignInPlaceholder": "Google sign-in not implemented",
+  "termsHint": "By continuing, you agree to the terms.",
+  "selectLanguage": "Select Language",
+  "chooseYourLanguage": "Choose your language",
+  "changeLaterHint": "You can change this later in settings.",
+  "englishLabel": "English",
+  "englishSubLabel": "Use the app in English",
+  "amharicLabel": "አማርኛ",
+  "amharicSubLabel": "በአማርኛ መጠቀም",
+  "next": "Next"
+}

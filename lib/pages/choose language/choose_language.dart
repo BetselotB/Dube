@@ -1,6 +1,13 @@
-// lib/pages/language_selector.dart
-import 'package:dube/pages/auth/auth.dart';
+// lib/pages/choose language/choose_language.dart
+import 'package:dube/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+// AuthPage - adjust package path if your auth file lives elsewhere
+import 'package:dube/pages/auth/auth.dart';
+
+// LocaleProvider (make sure the file exists at lib/core/locale_provider.dart)
+import '../../core/locale_provider.dart';
 
 enum AppLanguage { english, amharic }
 
@@ -14,13 +21,17 @@ class LanguageSelector extends StatefulWidget {
 class _LanguageSelectorState extends State<LanguageSelector> {
   AppLanguage? _selected;
 
-  void _onNext() {
+  Future<void> _onNext() async {
     if (_selected == null) return;
-    final langCode = _selected == AppLanguage.english ? 'en' : 'am';
+
+    final provider = Provider.of<LocaleProvider>(context, listen: false);
+    final code = _selected == AppLanguage.english ? 'en' : 'am';
+
+    await provider.setLocale(Locale(code));
+
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => AuthPage(languageCode: langCode),
-      ),
+      MaterialPageRoute(builder: (_) => const AuthPage()),
     );
   }
 
@@ -35,17 +46,18 @@ class _LanguageSelectorState extends State<LanguageSelector> {
       onTap: () => setState(() => _selected = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         decoration: BoxDecoration(
           color: isSelected ? Colors.deepPurple.shade50 : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: isSelected ? Colors.deepPurple : Colors.grey.shade200,
-              width: isSelected ? 2 : 1),
+            color: isSelected ? Colors.deepPurple : Colors.grey.shade200,
+            width: isSelected ? 2 : 1,
+          ),
           boxShadow: [
             if (!isSelected)
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: const Color.fromRGBO(0, 0, 0, 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -53,7 +65,6 @@ class _LanguageSelectorState extends State<LanguageSelector> {
         ),
         child: Row(
           children: [
-            // Visual icon / emoji
             Container(
               width: 56,
               height: 56,
@@ -62,13 +73,9 @@ class _LanguageSelectorState extends State<LanguageSelector> {
                 borderRadius: BorderRadius.circular(12),
                 color: isSelected ? Colors.deepPurple : Colors.grey.shade100,
               ),
-              child: Text(
-                assetEmoji,
-                style: const TextStyle(fontSize: 28),
-              ),
+              child: Text(assetEmoji, style: const TextStyle(fontSize: 28)),
             ),
             const SizedBox(width: 14),
-            // Labels
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,20 +94,16 @@ class _LanguageSelectorState extends State<LanguageSelector> {
                 ],
               ),
             ),
-            // Radio indicator
             AnimatedContainer(
               duration: const Duration(milliseconds: 220),
-              width: 24,
-              height: 24,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                    color: isSelected ? Colors.deepPurple : Colors.grey),
+                border: Border.all(color: isSelected ? Colors.deepPurple : Colors.grey),
                 color: isSelected ? Colors.deepPurple : Colors.white,
               ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 16)
-                  : null,
+              child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 16) : null,
             ),
           ],
         ),
@@ -110,52 +113,45 @@ class _LanguageSelectorState extends State<LanguageSelector> {
 
   @override
   Widget build(BuildContext context) {
-    // Page padding and layout designed for legibility and large touch targets
+    // Use AppLocalizations.of(context) and provide fallback strings if null
+    final t = AppLocalizations.of(context);
+
+    final selectLanguage = t?.selectLanguage ?? 'Select language';
+    final chooseYourLanguage = t?.chooseYourLanguage ?? 'Choose your language';
+    final changeLaterHint = t?.changeLaterHint ?? 'You can change this later in settings.';
+    final englishLabel = t?.englishLabel ?? 'English';
+    final englishSub = t?.englishSubLabel ?? 'Use the app in English';
+    final amharicLabel = t?.amharicLabel ?? 'አማርኛ';
+    final amharicSub = t?.amharicSubLabel ?? 'በአማርኛ መጠቀም';
+    final nextLabel = t?.next ?? 'Next';
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
         centerTitle: true,
-        title: const Text('Select language', style: TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(selectLanguage, style: const TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Column(
           children: [
             const SizedBox(height: 12),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'Choose your language',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+              child: Text(chooseYourLanguage, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 8),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'You can change this later in settings.',
-                style: TextStyle(color: Colors.black54),
-              ),
+              child: Text(changeLaterHint, style: const TextStyle(color: Colors.black54)),
             ),
             const SizedBox(height: 24),
-            // Language options
-            _languageCard(
-              label: 'English',
-              subLabel: 'Use the app in English',
-              assetEmoji: '🇺🇸',
-              value: AppLanguage.english,
-            ),
+            _languageCard(label: englishLabel, subLabel: englishSub, assetEmoji: '🇺🇸', value: AppLanguage.english),
             const SizedBox(height: 14),
-            _languageCard(
-              label: 'አማርኛ',
-              subLabel: 'በአማርኛ መጠቀም',
-              assetEmoji: '🇪🇹',
-              value: AppLanguage.amharic,
-            ),
+            _languageCard(label: amharicLabel, subLabel: amharicSub, assetEmoji: '🇪🇹', value: AppLanguage.amharic),
             const Spacer(),
-            // Next button
             Padding(
               padding: const EdgeInsets.only(bottom: 18.0),
               child: SizedBox(
@@ -164,12 +160,11 @@ class _LanguageSelectorState extends State<LanguageSelector> {
                 child: ElevatedButton(
                   onPressed: _selected == null ? null : _onNext,
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 4,
                   ),
                   child: Text(
-                    'Next',
+                    nextLabel,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
