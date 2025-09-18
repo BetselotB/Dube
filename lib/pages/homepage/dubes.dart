@@ -12,10 +12,14 @@ class DubesPage extends StatefulWidget {
   /// Use this to push with a smooth transition from Home:
   static Route route({String? personId, String? personName}) {
     return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => DubesPage(personId: personId, personName: personName),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          DubesPage(personId: personId, personName: personName),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         // slide from right (or change Offset to (0,1) to slide from bottom)
-        final tween = Tween(begin: const Offset(1, 0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOut));
+        final tween = Tween(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOut));
         return SlideTransition(position: animation.drive(tween), child: child);
       },
     );
@@ -57,7 +61,10 @@ class _DubesPageState extends State<DubesPage> {
   // ---------- Manage mode (dubes for person) ----------
   Future<void> _loadDubes() async {
     if (widget.personId == null) return;
-    final rows = await LocalSqlite.getDubesForPerson(widget.personId!, search: _searchCtrl.text);
+    final rows = await LocalSqlite.getDubesForPerson(
+      widget.personId!,
+      search: _searchCtrl.text,
+    );
     if (!mounted) return;
     setState(() => _dubes = rows);
   }
@@ -72,15 +79,37 @@ class _DubesPageState extends State<DubesPage> {
       builder: (c) => AlertDialog(
         title: const Text('Add Dube (item)'),
         content: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: itemCtrl, decoration: const InputDecoration(labelText: 'Item name')),
-            TextField(controller: qtyCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Quantity')),
-            TextField(controller: priceCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Price (per item)')),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: itemCtrl,
+                decoration: const InputDecoration(labelText: 'Item name'),
+              ),
+              TextField(
+                controller: qtyCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Quantity'),
+              ),
+              TextField(
+                controller: priceCtrl,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Price (per item)',
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Add')),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
@@ -89,14 +118,23 @@ class _DubesPageState extends State<DubesPage> {
     final item = itemCtrl.text.trim();
     final qty = int.tryParse(qtyCtrl.text) ?? 1;
     final price = double.tryParse(priceCtrl.text) ?? 0.0;
-    await LocalSqlite.insertDube(personId: widget.personId!, itemName: item, quantity: qty, priceAtTaken: price);
+    await LocalSqlite.insertDube(
+      personId: widget.personId!,
+      itemName: item,
+      quantity: qty,
+      priceAtTaken: price,
+    );
     await _loadDubes();
   }
 
   Future<void> _editDube(Map<String, dynamic> d) async {
     final itemCtrl = TextEditingController(text: d['itemName'] ?? '');
-    final qtyCtrl = TextEditingController(text: (d['quantity'] ?? 1).toString());
-    final priceCtrl = TextEditingController(text: (d['priceAtTaken'] ?? 0).toString());
+    final qtyCtrl = TextEditingController(
+      text: (d['quantity'] ?? 1).toString(),
+    );
+    final priceCtrl = TextEditingController(
+      text: (d['priceAtTaken'] ?? 0).toString(),
+    );
     final noteCtrl = TextEditingController(text: (d['note'] ?? ''));
 
     final ok = await showDialog<bool?>(
@@ -104,16 +142,41 @@ class _DubesPageState extends State<DubesPage> {
       builder: (c) => AlertDialog(
         title: const Text('Edit Dube'),
         content: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: itemCtrl, decoration: const InputDecoration(labelText: 'Item name')),
-            TextField(controller: qtyCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Quantity')),
-            TextField(controller: priceCtrl, keyboardType: TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Price (per item)')),
-            TextField(controller: noteCtrl, decoration: const InputDecoration(labelText: 'Note (optional)')),
-          ]),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: itemCtrl,
+                decoration: const InputDecoration(labelText: 'Item name'),
+              ),
+              TextField(
+                controller: qtyCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Quantity'),
+              ),
+              TextField(
+                controller: priceCtrl,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Price (per item)',
+                ),
+              ),
+              TextField(
+                controller: noteCtrl,
+                decoration: const InputDecoration(labelText: 'Note (optional)'),
+              ),
+            ],
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Save')),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
@@ -121,7 +184,13 @@ class _DubesPageState extends State<DubesPage> {
     if (ok != true) return;
     final qty = int.tryParse(qtyCtrl.text) ?? 1;
     final price = double.tryParse(priceCtrl.text) ?? 0.0;
-    await LocalSqlite.updateDube(d['id'] as String, itemName: itemCtrl.text.trim(), quantity: qty, priceAtTaken: price, note: noteCtrl.text.trim());
+    await LocalSqlite.updateDube(
+      d['id'] as String,
+      itemName: itemCtrl.text.trim(),
+      quantity: qty,
+      priceAtTaken: price,
+      note: noteCtrl.text.trim(),
+    );
     await _loadDubes();
   }
 
@@ -132,8 +201,14 @@ class _DubesPageState extends State<DubesPage> {
         title: const Text('Delete Dube'),
         content: const Text('Are you sure?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('No')),
-          ElevatedButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Yes')),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('No'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Yes'),
+          ),
         ],
       ),
     );
@@ -148,10 +223,18 @@ class _DubesPageState extends State<DubesPage> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Delete person'),
-        content: const Text('Delete this person and their dubes? (soft delete)'),
+        content: const Text(
+          'Delete this person and their dubes? (soft delete)',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -174,25 +257,46 @@ class _DubesPageState extends State<DubesPage> {
           padding: const EdgeInsets.all(12.0),
           child: TextField(
             controller: _peopleSearchCtrl,
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search people'),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search people',
+            ),
             onChanged: (v) => _loadPeople(),
           ),
         ),
         Expanded(
           child: _people.isEmpty
               ? Center(
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.description_outlined, size: 72, color: Colors.indigo.shade400),
-                    const SizedBox(height: 18),
-                    const Text('No people yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    const Text('Add people from the Home tab or use the Add button there.'),
-                  ]),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.description_outlined,
+                        size: 72,
+                        color: Colors.indigo.shade400,
+                      ),
+                      const SizedBox(height: 18),
+                      const Text(
+                        'No people yet',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Add people from the Home tab or use the Add button there.',
+                      ),
+                    ],
+                  ),
                 )
               : RefreshIndicator(
                   onRefresh: _loadPeople,
                   child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     itemCount: _people.length,
                     separatorBuilder: (_, __) => const Divider(height: 0),
                     itemBuilder: (context, i) {
@@ -205,13 +309,25 @@ class _DubesPageState extends State<DubesPage> {
                         subtitle: Text('\$${(p['total'] ?? 0).toString()}'),
                         onTap: () {
                           // Open the same page but in manage mode for the chosen person
-                          Navigator.of(context).push(DubesPage.route(personId: p['id'], personName: p['name'])).then((_) => _loadPeople());
+                          Navigator.of(context)
+                              .push(
+                                DubesPage.route(
+                                  personId: p['id'],
+                                  personName: p['name'],
+                                ),
+                              )
+                              .then((_) => _loadPeople());
                         },
                         trailing: PopupMenuButton<String>(
                           onSelected: (v) {
                             if (v == 'delete') _deletePerson(p['id']);
                           },
-                          itemBuilder: (_) => const [PopupMenuItem(value: 'delete', child: Text('Delete'))],
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -223,40 +339,62 @@ class _DubesPageState extends State<DubesPage> {
   }
 
   Widget _buildManageMode() {
-    return Column(children: [
-      Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: TextField(controller: _searchCtrl, decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search item or note'), onChanged: (v) => _loadDubes()),
-      ),
-      Expanded(
-        child: _dubes.isEmpty
-            ? const Center(child: Text('No dubes yet'))
-            : ListView.separated(
-                itemCount: _dubes.length,
-                separatorBuilder: (_, __) => const Divider(height: 0),
-                itemBuilder: (context, i) {
-                  final d = _dubes[i];
-                  final created = DateTime.fromMillisecondsSinceEpoch(d['createdAt'] as int);
-                  return ListTile(
-                    title: Text('${d['itemName'] ?? '—'}  x${d['quantity'] ?? 1}'),
-                    subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('Price: \$${(d['priceAtTaken'] ?? 0).toString()}  •  Amount: \$${(d['amount'] ?? 0).toString()}'),
-                      if ((d['note'] ?? '').toString().isNotEmpty) Text(d['note'] ?? ''),
-                      Text('${created.toLocal()}'),
-                    ]),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (v) {
-                        if (v == 'edit') _editDube(d);
-                        if (v == 'delete') _deleteDube(d);
-                      },
-                      itemBuilder: (_) => const [PopupMenuItem(value: 'edit', child: Text('Edit')), PopupMenuItem(value: 'delete', child: Text('Delete'))],
-                    ),
-                    isThreeLine: true,
-                  );
-                },
-              ),
-      ),
-    ]);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: TextField(
+            controller: _searchCtrl,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search item or note',
+            ),
+            onChanged: (v) => _loadDubes(),
+          ),
+        ),
+        Expanded(
+          child: _dubes.isEmpty
+              ? const Center(child: Text('No dubes yet'))
+              : ListView.separated(
+                  itemCount: _dubes.length,
+                  separatorBuilder: (_, __) => const Divider(height: 0),
+                  itemBuilder: (context, i) {
+                    final d = _dubes[i];
+                    final created = DateTime.fromMillisecondsSinceEpoch(
+                      d['createdAt'] as int,
+                    );
+                    return ListTile(
+                      title: Text(
+                        '${d['itemName'] ?? '—'}  x${d['quantity'] ?? 1}',
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Price: \$${(d['priceAtTaken'] ?? 0).toString()}  •  Amount: \$${(d['amount'] ?? 0).toString()}',
+                          ),
+                          if ((d['note'] ?? '').toString().isNotEmpty)
+                            Text(d['note'] ?? ''),
+                          Text('${created.toLocal()}'),
+                        ],
+                      ),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (v) {
+                          if (v == 'edit') _editDube(d);
+                          if (v == 'delete') _deleteDube(d);
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        ],
+                      ),
+                      isThreeLine: true,
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
   }
 
   String _getInitials(String name) {
@@ -268,32 +406,47 @@ class _DubesPageState extends State<DubesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final body = widget.personId == null ? _buildPeopleListMode() : _buildManageMode();
+    final body = widget.personId == null
+        ? _buildPeopleListMode()
+        : _buildManageMode();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.personId == null ? 'Dubes — People' : 'Dubes — ${widget.personName ?? 'Person'}'),
-        actions: widget.personId == null ? null : [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
+        title: Text(
+          widget.personId == null
+              ? 'Dubes — People'
+              : 'Dubes — ${widget.personName ?? 'Person'}',
+        ),
+        actions: widget.personId == null
+            ? null
+            : [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
       ),
       body: body,
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
-            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, offset: Offset(0, 4))]),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.06),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: GNav(
               gap: 8,
-              selectedIndex: _selectedIndex,
+              selectedIndex: _selectedIndex, // 0 = Home, 1 = Dubes
               onTabChange: (index) {
-                if (index == _selectedIndex) return;
-                // Home tapped — just pop back to Home for a smooth animation.
                 if (index == 0) {
-                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // back to Home
                   return;
                 }
-                // Dubes tapped (index == 1) — stay here
-                setState(() => _selectedIndex = index);
+                setState(() => _selectedIndex = index); // stay on Dubes
               },
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               tabs: const [

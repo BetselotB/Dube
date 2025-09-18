@@ -20,7 +20,8 @@ class PersonLocal {
   final num total;
   PersonLocal({required this.id, required this.name, required this.total});
 
-  factory PersonLocal.fromRow(Map<String, dynamic> r) => PersonLocal(id: r['id'], name: r['name'], total: r['total'] ?? 0);
+  factory PersonLocal.fromRow(Map<String, dynamic> r) =>
+      PersonLocal(id: r['id'], name: r['name'], total: r['total'] ?? 0);
 }
 
 class _HomePageState extends State<HomePage> {
@@ -53,9 +54,17 @@ class _HomePageState extends State<HomePage> {
 
     // find newly created person id to open dubes page
     final rows = await LocalSqlite.getAllPeople(search: name);
-    final created = rows.firstWhere((r) => (r['name'] ?? '') == name, orElse: () => {});
+    final created = rows.firstWhere(
+      (r) => (r['name'] ?? '') == name,
+      orElse: () => {},
+    );
     if (created.isNotEmpty) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => DubesPage(personId: created['id'], personName: created['name'])));
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              DubesPage(personId: created['id'], personName: created['name']),
+        ),
+      );
     }
   }
 
@@ -64,10 +73,18 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Delete person'),
-        content: const Text('Delete this person and their dubes? (soft delete)'),
+        content: const Text(
+          'Delete this person and their dubes? (soft delete)',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
@@ -88,7 +105,12 @@ class _HomePageState extends State<HomePage> {
                 currentAccountPicture: CircleAvatar(
                   radius: 28,
                   backgroundColor: Colors.indigo,
-                  child: Text((user.displayName ?? 'U').isNotEmpty ? (user.displayName ?? 'U').substring(0, 1) : 'U', style: const TextStyle(color: Colors.white)),
+                  child: Text(
+                    (user.displayName ?? 'U').isNotEmpty
+                        ? (user.displayName ?? 'U').substring(0, 1)
+                        : 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
               ListTile(
@@ -96,7 +118,9 @@ class _HomePageState extends State<HomePage> {
                 title: const Text('Settings'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsPage()));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  );
                 },
               ),
               ListTile(
@@ -113,7 +137,10 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text('App version 1.0.0', style: Theme.of(context).textTheme.bodySmall),
+                child: Text(
+                  'App version 1.0.0',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
               const SizedBox(height: 24),
             ],
@@ -126,11 +153,20 @@ class _HomePageState extends State<HomePage> {
   Future<void> _logout() async {
     await _auth.signOut();
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
   }
 
   void _gotoDubes(String personName, String personId) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => DubesPage(personId: personId, personName: personName))).then((_) => _loadPeople());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) =>
+                DubesPage(personId: personId, personName: personName),
+          ),
+        )
+        .then((_) => _loadPeople());
   }
 
   Widget _buildHomeTab() {
@@ -143,19 +179,31 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: TextField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Add person name', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Add person name',
+                    border: OutlineInputBorder(),
+                  ),
                   onSubmitted: (_) => _addPerson(),
                 ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton(onPressed: _addPerson, style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(14)), child: const Icon(Icons.add)),
+              ElevatedButton(
+                onPressed: _addPerson,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(14),
+                ),
+                child: const Icon(Icons.add),
+              ),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: TextField(
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search people'),
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search people',
+            ),
             onChanged: (v) async {
               _search = v;
               await _loadPeople();
@@ -167,7 +215,10 @@ class _HomePageState extends State<HomePage> {
           child: _people.isEmpty
               ? const Center(child: Text('No people yet'))
               : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   itemCount: _people.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, i) {
@@ -183,7 +234,12 @@ class _HomePageState extends State<HomePage> {
                           onSelected: (v) {
                             if (v == 'delete') _deletePerson(p.id);
                           },
-                          itemBuilder: (_) => const [PopupMenuItem(value: 'delete', child: Text('Delete'))],
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -198,13 +254,26 @@ class _HomePageState extends State<HomePage> {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28.0),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.description_outlined, size: 72, color: Colors.indigo.shade400),
-          const SizedBox(height: 18),
-          const Text('Dubes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          const Text('Select a person from Home to view their dubes (transactions).', textAlign: TextAlign.center),
-        ]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.description_outlined,
+              size: 72,
+              color: Colors.indigo.shade400,
+            ),
+            const SizedBox(height: 18),
+            const Text(
+              'Dubes',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Select a person from Home to view their dubes (transactions).',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -221,56 +290,74 @@ class _HomePageState extends State<HomePage> {
     final user = _auth.currentUser;
     if (user == null) {
       Future.microtask(() {
-        if (mounted) Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
+        if (mounted)
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const AuthPage()),
+          );
       });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold( 
+    return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
         title: const Text('Selam — Who owes what?'),
-        actions: [IconButton(icon: const Icon(Icons.logout), tooltip: 'Logout', onPressed: _logout)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: _logout,
+          ),
+        ],
       ),
       drawer: _buildDrawer(user),
-body: AnimatedSwitcher(
-  duration: const Duration(milliseconds: 260),
-  transitionBuilder: (Widget child, Animation<double> animation) {
-    // slide from right when switching to Dubes, slide to left when back to Home
-    final inFromRight = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(animation);
-    return SlideTransition(position: inFromRight, child: child);
-  },
-  child: _selectedIndex == 0
-      ? KeyedSubtree(key: const ValueKey('home'), child: _buildHomeTab())
-      : KeyedSubtree(key: const ValueKey('dubes'), child: _buildDubesTab()),
-),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          // slide from right when switching to Dubes, slide to left when back to Home
+          final inFromRight = Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(animation);
+          return SlideTransition(position: inFromRight, child: child);
+        },
+        child: _selectedIndex == 0
+            ? KeyedSubtree(key: const ValueKey('home'), child: _buildHomeTab())
+            : KeyedSubtree(
+                key: const ValueKey('dubes'),
+                child: _buildDubesTab(),
+              ),
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Container(
-            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, offset: Offset(0, 4))]),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color.fromRGBO(0, 0, 0, 0.06),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child:GNav(
-  gap: 8,
-  selectedIndex: _selectedIndex,
-  onTabChange: (index) {
-    // If user tapped the Dubes tab, open the shared DubesPage route.
-    if (index == 1) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DubesPage()));
-      // keep selected index at home (or update if you prefer)
-      setState(() => _selectedIndex = 0);
-      return;
-    }
-    setState(() => _selectedIndex = index);
-  },
-  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-  tabs: const [
-    GButton(icon: Icons.home_outlined, text: 'Home'),
-    GButton(icon: Icons.description_outlined, text: 'Dubes'),
-  ],
-),
-
+            child: GNav(
+              gap: 8,
+              selectedIndex: _selectedIndex,
+              onTabChange: (index) => setState(() => _selectedIndex = index),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              tabs: const [
+                GButton(icon: Icons.home_outlined, text: 'Home'),
+                GButton(icon: Icons.description_outlined, text: 'Dubes'),
+              ],
+            ),
           ),
         ),
       ),
