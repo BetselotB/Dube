@@ -18,5 +18,13 @@
   "englishSubLabel": "Use the app in English",
   "amharicLabel": "አማርኛ",
   "amharicSubLabel": "በአማርኛ መጠቀም",
-  "next": "Next"
+  "next": "Next",
+
+  "name": "Full name",
+  "fillAllFields": "Please fill in all fields.",
+  "passwordsDontMatch": "Passwords do not match.",
+  "loginSuccessful": "Logged in successfully.",
+  "signupSuccessful": "Account created.",
+  "googleSignInCancelled": "Google sign-in cancelled.",
+  "googleSignInSuccess": "Signed in with Google."
 }

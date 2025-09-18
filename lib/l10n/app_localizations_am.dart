@@ -64,4 +64,25 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get next => 'ቀጣይ';
+
+  @override
+  String get name => 'Full name';
+
+  @override
+  String get fillAllFields => 'Please fill in all fields.';
+
+  @override
+  String get passwordsDontMatch => 'Passwords do not match.';
+
+  @override
+  String get loginSuccessful => 'Logged in successfully.';
+
+  @override
+  String get signupSuccessful => 'Account created.';
+
+  @override
+  String get googleSignInCancelled => 'Google sign-in cancelled.';
+
+  @override
+  String get googleSignInSuccess => 'Signed in with Google.';
 }
