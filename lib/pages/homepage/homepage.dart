@@ -1,5 +1,6 @@
 // lib/pages/homepage/home.dart
 import 'package:dube/pages/homepage/dubes.dart';
+import 'package:dube/components/flag.dart';
 import 'package:dube/pages/homepage/settings.dart';
 import 'package:dube/pages/homepage/profile.dart';
 import 'package:flutter/material.dart';
@@ -20,15 +21,22 @@ class PersonLocal {
   final String id;
   final String name;
   final num total;
-  PersonLocal({required this.id, required this.name, required this.total});
+  final int? createdAt;
+  PersonLocal({required this.id, required this.name, required this.total, this.createdAt});
 
   factory PersonLocal.fromRow(Map<String, dynamic> r) =>
-      PersonLocal(id: r['id'], name: r['name'], total: r['total'] ?? 0);
+      PersonLocal(
+        id: r['id'],
+        name: r['name'],
+        total: r['total'] ?? 0,
+        createdAt: r['createdAt'] as int?,
+      );
 
   static PersonLocal fromMap(Map<String, dynamic> p) => PersonLocal(
     id: p['id'],
     name: (p['name'] ?? '').toString(),
     total: p['total'] ?? 0,
+    createdAt: p['createdAt'] as int?,
   );
 }
 
@@ -250,7 +258,21 @@ class _HomePageState extends State<HomePage> {
                     final initials = _getInitials(p.name);
                     return Card(
                       child: ListTile(
-                        leading: CircleAvatar(child: Text(initials)),
+                        leading: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            CircleAvatar(child: Text(initials)),
+                            if (p.createdAt != null)
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: AgingFlag(
+                                  createdAtMillis: p.createdAt!,
+                                  size: 12,
+                                ),
+                              ),
+                          ],
+                        ),
                         title: Text(p.name),
                         subtitle: Text('\$${p.total.toString()}'),
                         onTap: () => _gotoDubes(p.name, p.id),
@@ -305,7 +327,21 @@ class _HomePageState extends State<HomePage> {
                     final initials = _getInitials(p.name);
                     return Card(
                       child: ListTile(
-                        leading: CircleAvatar(child: Text(initials)),
+                        leading: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            CircleAvatar(child: Text(initials)),
+                            if (p.createdAt != null)
+                              Positioned(
+                                right: -2,
+                                bottom: -2,
+                                child: AgingFlag(
+                                  createdAtMillis: p.createdAt!,
+                                  size: 12,
+                                ),
+                              ),
+                          ],
+                        ),
                         title: Text(p.name),
                         subtitle: Text('\$${p.total.toString()}'),
                         onTap: () => _gotoDubes(p.name, p.id),
