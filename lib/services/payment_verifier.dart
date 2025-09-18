@@ -59,7 +59,7 @@ class PaymentVerifierService {
 
     return PaymentVerificationResult(
       success: false,
-      message: 'Verification failed (${res.statusCode})',
+      message: 'Verification failed (${res.statusCode}): ${res.body}',
     );
   }
 
