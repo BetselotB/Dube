@@ -3,11 +3,13 @@ import 'package:dube/firebase_options.dart';
 import 'package:dube/l10n/app_localizations.dart';
 import 'package:dube/pages/choose%20language/choose_language.dart';
 import 'package:dube/pages/homepage/homepage.dart';
+import 'package:dube/pages/paywall/paywall_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/locale_provider.dart'; // make sure this file exists
+import 'services/trial_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,16 +77,24 @@ class _SplashPageState extends State<SplashPage>
     _textWidth = tp.width;
 
     // After the splash duration decide where to go:
-    Future.delayed(const Duration(milliseconds: 1400), () {
+    Future.delayed(const Duration(milliseconds: 1400), () async {
       if (!mounted) return;
 
       final user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        // User is already signed in -> go straight to HomePage
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+        // Evaluate trial/paywall before routing
+        final locked = await TrialService.evaluateAndPersist();
+        if (!mounted) return;
+        if (locked) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const PaywallPage()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomePage()),
+          );
+        }
       } else {
         // Not signed in -> show language selector (as before)
         Navigator.of(context).pushReplacement(

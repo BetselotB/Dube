@@ -1,6 +1,8 @@
 import 'package:dube/config.dart';
 import 'package:dube/l10n/app_localizations.dart';
 import 'package:dube/pages/homepage/homepage.dart';
+import 'package:dube/pages/paywall/paywall_page.dart';
+import 'package:dube/services/trial_service.dart';
 import 'package:dube/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -61,8 +63,10 @@ class _AuthPageState extends State<AuthPage> {
     try {
       if (_mode == AuthMode.login) {
         // login
-        final userCred =
-            await _authService.signInWithEmail(email: email, password: pass);
+        final userCred = await _authService.signInWithEmail(
+          email: email,
+          password: pass,
+        );
         final user = userCred.user;
         if (user != null) {
           await FirebaseFirestore.instance
@@ -74,7 +78,10 @@ class _AuthPageState extends State<AuthPage> {
       } else {
         // signup
         final userCred = await _authService.signUpWithEmail(
-            email: email, password: pass, displayName: name);
+          email: email,
+          password: pass,
+          displayName: name,
+        );
 
         final user = userCred.user;
         if (user != null) {
@@ -82,19 +89,27 @@ class _AuthPageState extends State<AuthPage> {
               .collection('users')
               .doc(user.uid)
               .set({
-            'uid': user.uid,
-            'name': name,
-            'email': email,
-            'createdAt': FieldValue.serverTimestamp(),
-            'lastLogin': FieldValue.serverTimestamp(),
-            'provider': 'email',
-          });
+                'uid': user.uid,
+                'name': name,
+                'email': email,
+                'createdAt': FieldValue.serverTimestamp(),
+                'lastLogin': FieldValue.serverTimestamp(),
+                'provider': 'email',
+              });
         }
         _showSnack(t.signupSuccessful);
       }
 
-      // ✅ Navigate to HomePage after successful auth
-      if (mounted) {
+      // ✅ After successful auth, evaluate trial and route accordingly
+      if (!mounted) return;
+      final locked = await TrialService.evaluateAndPersist();
+      if (!mounted) return;
+      if (locked) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PaywallPage()),
+        );
+      } else {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomePage()),
@@ -113,7 +128,8 @@ class _AuthPageState extends State<AuthPage> {
     setState(() => _loading = true);
     try {
       final userCred = await _authService.signInWithGoogle(
-          serverClientId: kGoogleWebClientId);
+        serverClientId: kGoogleWebClientId,
+      );
 
       if (userCred == null) {
         _showSnack(t.googleSignInCancelled);
@@ -124,14 +140,14 @@ class _AuthPageState extends State<AuthPage> {
               .collection('users')
               .doc(user.uid)
               .set({
-            'uid': user.uid,
-            'name': user.displayName ?? '',
-            'email': user.email,
-            'photoURL': user.photoURL,
-            'createdAt': FieldValue.serverTimestamp(),
-            'lastLogin': FieldValue.serverTimestamp(),
-            'provider': 'google',
-          }, SetOptions(merge: true)); // merge to not overwrite
+                'uid': user.uid,
+                'name': user.displayName ?? '',
+                'email': user.email,
+                'photoURL': user.photoURL,
+                'createdAt': FieldValue.serverTimestamp(),
+                'lastLogin': FieldValue.serverTimestamp(),
+                'provider': 'google',
+              }, SetOptions(merge: true)); // merge to not overwrite
         }
 
         _showSnack(t.googleSignInSuccess);
@@ -169,8 +185,10 @@ class _AuthPageState extends State<AuthPage> {
             child: SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 28,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -200,14 +218,17 @@ class _AuthPageState extends State<AuthPage> {
                       Card(
                         elevation: 6,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Column(
                             children: [
                               if (_mode == AuthMode.signup) ...[
                                 _buildTextField(
-                                    controller: _nameController, hint: t.name),
+                                  controller: _nameController,
+                                  hint: t.name,
+                                ),
                                 const SizedBox(height: 12),
                               ],
                               _buildTextField(
@@ -221,9 +242,11 @@ class _AuthPageState extends State<AuthPage> {
                                 hint: t.password,
                                 obscure: _obscure,
                                 suffix: IconButton(
-                                  icon: Icon(_obscure
-                                      ? Icons.visibility
-                                      : Icons.visibility_off),
+                                  icon: Icon(
+                                    _obscure
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  ),
                                   onPressed: () =>
                                       setState(() => _obscure = !_obscure),
                                 ),
@@ -244,30 +267,36 @@ class _AuthPageState extends State<AuthPage> {
                                   onPressed: _loading ? null : () => _submit(t),
                                   style: ElevatedButton.styleFrom(
                                     shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                  child: Text(_mode == AuthMode.login
-                                      ? t.login
-                                      : t.createAccount),
+                                  child: Text(
+                                    _mode == AuthMode.login
+                                        ? t.login
+                                        : t.createAccount,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 14),
                               Row(
                                 children: [
                                   Expanded(
-                                      child: Divider(
-                                          color: Colors.grey.shade300)),
+                                    child: Divider(color: Colors.grey.shade300),
+                                  ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Text(t.or,
-                                        style: const TextStyle(
-                                            color: Colors.black54)),
+                                      horizontal: 10,
+                                    ),
+                                    child: Text(
+                                      t.or,
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
                                   ),
                                   Expanded(
-                                      child: Divider(
-                                          color: Colors.grey.shade300)),
+                                    child: Divider(color: Colors.grey.shade300),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -292,7 +321,9 @@ class _AuthPageState extends State<AuthPage> {
                               Text(
                                 t.termsHint,
                                 style: const TextStyle(
-                                    fontSize: 12, color: Colors.black45),
+                                  fontSize: 12,
+                                  color: Colors.black45,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -334,8 +365,7 @@ class _AuthPageState extends State<AuthPage> {
             label,
             style: TextStyle(
               fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-              color:
-                  active ? Colors.deepPurple.shade700 : Colors.black54,
+              color: active ? Colors.deepPurple.shade700 : Colors.black54,
             ),
           ),
         ),
@@ -359,11 +389,14 @@ class _AuthPageState extends State<AuthPage> {
         suffixIcon: suffix,
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }
