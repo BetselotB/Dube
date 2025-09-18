@@ -20,14 +20,12 @@ class ProfilePage extends StatelessWidget {
               children: [
                 Card(
                   child: ListTile(
-                    leading: CircleAvatar(
+                    leading: const CircleAvatar(
                       radius: 24,
-                      backgroundColor: Colors.indigo,
+                      backgroundColor: Color(0xFF2B2D42),
                       child: Text(
-                        (user.displayName ?? 'U').isNotEmpty
-                            ? (user.displayName ?? 'U').substring(0, 1)
-                            : 'U',
-                        style: const TextStyle(color: Colors.white),
+                        'U',
+                        style: TextStyle(color: Color(0xFFFFFFFF)),
                       ),
                     ),
                     title: Text(user.displayName ?? 'User'),

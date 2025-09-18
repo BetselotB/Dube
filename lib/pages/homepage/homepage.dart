@@ -134,14 +134,12 @@ class _HomePageState extends State<HomePage> {
               UserAccountsDrawerHeader(
                 accountName: Text(user.displayName ?? 'User'),
                 accountEmail: Text(user.email ?? ''),
-                currentAccountPicture: CircleAvatar(
+                currentAccountPicture: const CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.indigo,
+                  backgroundColor: Color(0xFF2B2D42),
                   child: Text(
-                    (user.displayName ?? 'U').isNotEmpty
-                        ? (user.displayName ?? 'U').substring(0, 1)
-                        : 'U',
-                    style: const TextStyle(color: Colors.white),
+                    'U',
+                    style: TextStyle(color: Color(0xFFFFFFFF)),
                   ),
                 ),
               ),
@@ -393,6 +391,7 @@ class _HomePageState extends State<HomePage> {
       drawer: _buildDrawer(user),
       body: PageView(
         controller: _pageController,
+        physics: const BouncingScrollPhysics(),
         onPageChanged: (i) => setState(() => _currentPageIndex = i),
         children: [
           _buildHomeTab(),
@@ -405,15 +404,25 @@ class _HomePageState extends State<HomePage> {
           final target = _currentPageIndex == 0 ? 1 : 0;
           _pageController.animateToPage(
             target,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: const Duration(milliseconds: 420),
+            curve: Curves.easeInOutCubic,
           );
         },
-        label: Text(_currentPageIndex == 0 ? 'Dubes' : 'Home'),
-        icon: Icon(
-          _currentPageIndex == 0
-              ? Icons.description_outlined
-              : Icons.home_outlined,
+        label: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: Text(
+            _currentPageIndex == 0 ? 'Dubes' : 'Home',
+            key: ValueKey(_currentPageIndex),
+          ),
+        ),
+        icon: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: Icon(
+            _currentPageIndex == 0
+                ? Icons.description_outlined
+                : Icons.home_outlined,
+            key: ValueKey('icon-$_currentPageIndex'),
+          ),
         ),
       ),
     );

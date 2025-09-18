@@ -266,10 +266,10 @@ class _DubesPageState extends State<DubesPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.description_outlined,
                         size: 72,
-                        color: Colors.indigo.shade400,
+                        color: Color(0xFF2B2D42),
                       ),
                       const SizedBox(height: 18),
                       const Text(
