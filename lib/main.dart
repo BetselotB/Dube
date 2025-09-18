@@ -11,9 +11,7 @@ import 'core/locale_provider.dart'; // make sure this file exists
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     ChangeNotifierProvider(
@@ -39,10 +37,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       locale: localeProvider.locale, // <-- set locale from provider
-      supportedLocales: const [
-        Locale('en'),
-        Locale('am'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('am')],
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: const SplashPage(),
     );
@@ -71,10 +66,7 @@ class _SplashPageState extends State<SplashPage>
       duration: const Duration(milliseconds: 1400),
     )..repeat();
 
-    const textStyle = TextStyle(
-      fontSize: 56,
-      fontWeight: FontWeight.bold,
-    );
+    const textStyle = TextStyle(fontSize: 56, fontWeight: FontWeight.bold);
     final tp = TextPainter(
       text: TextSpan(text: _logoText, style: textStyle),
       textDirection: TextDirection.ltr,
@@ -90,7 +82,9 @@ class _SplashPageState extends State<SplashPage>
 
       if (user != null) {
         // User is already signed in -> go straight to HomePage
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
       } else {
         // Not signed in -> show language selector (as before)
         Navigator.of(context).pushReplacement(
