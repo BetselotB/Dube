@@ -226,7 +226,7 @@ class _HomePageState extends State<HomePage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
+    return Scaffold( 
       key: _scaffoldKey,
       appBar: AppBar(
         leading: IconButton(icon: const Icon(Icons.menu), onPressed: () => _scaffoldKey.currentState?.openDrawer()),

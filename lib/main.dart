@@ -2,12 +2,15 @@
 import 'package:dube/firebase_options.dart';
 import 'package:dube/l10n/app_localizations.dart';
 import 'package:dube/pages/choose%20language/choose_language.dart';
+import 'package:dube/pages/homepage/homepage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/locale_provider.dart'; // make sure this file exists
+
 Future<void> main() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -79,8 +82,17 @@ class _SplashPageState extends State<SplashPage>
     tp.layout();
     _textWidth = tp.width;
 
+    // After the splash duration decide where to go:
     Future.delayed(const Duration(milliseconds: 1400), () {
-      if (mounted) {
+      if (!mounted) return;
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // User is already signed in -> go straight to HomePage
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      } else {
+        // Not signed in -> show language selector (as before)
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LanguageSelector()),
         );
