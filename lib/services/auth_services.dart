@@ -55,7 +55,7 @@ class AuthService {
       final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
 
       // Get authentication (idToken). Note: accessToken is part of authorization flows.
-      final GoogleSignInAuthentication auth = await googleUser.authentication;
+      final GoogleSignInAuthentication auth = googleUser.authentication;
 
       final idToken = auth.idToken;
       if (idToken == null) {

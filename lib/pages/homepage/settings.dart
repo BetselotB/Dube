@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../src/local_sqlite.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart'; // for XFile used by shareXFiles
+// for XFile used by shareXFiles
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

@@ -65,7 +65,7 @@ class LocalSqlite {
   static Future<List<Map<String, dynamic>>> getAllPeople({String search = ''}) async {
     await init();
     final uid = _uid();
-    final where = "deleted = 0 AND userId = ?" + (search.isNotEmpty ? " AND name LIKE ?" : "");
+    final where = "deleted = 0 AND userId = ?${search.isNotEmpty ? " AND name LIKE ?" : ""}";
     final args = search.isNotEmpty ? [uid, '%$search%'] : [uid];
     final rows = await _db!.rawQuery('SELECT * FROM people WHERE $where ORDER BY createdAt ASC', args);
     return rows;
@@ -90,7 +90,7 @@ class LocalSqlite {
   static Future<List<Map<String, dynamic>>> getDubesForPerson(String personId, {String search = ''}) async {
     await init();
     final uid = _uid();
-    final where = 'personId = ? AND userId = ?' + (search.isNotEmpty ? ' AND (itemName LIKE ? OR note LIKE ?)' : '');
+    final where = 'personId = ? AND userId = ?${search.isNotEmpty ? ' AND (itemName LIKE ? OR note LIKE ?)' : ''}';
     final args = search.isNotEmpty ? [personId, uid, '%$search%', '%$search%'] : [personId, uid];
     final rows = await _db!.query('dubes', where: where, whereArgs: args, orderBy: 'createdAt DESC');
     return rows;
