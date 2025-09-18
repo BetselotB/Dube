@@ -20,8 +20,11 @@ class PersonLocal {
   final num total;
   PersonLocal({required this.id, required this.name, required this.total});
 
-  factory PersonLocal.fromRow(Map<String, dynamic> r) =>
-      PersonLocal(id: r['id'], name: r['name'], total: r['total'] ?? 0);
+  factory PersonLocal.fromRow(Map<String, dynamic> r) => PersonLocal(
+        id: r['id'],
+        name: r['name'],
+        total: r['total'] ?? 0,
+      );
 }
 
 class _HomePageState extends State<HomePage> {
@@ -30,6 +33,10 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   List<PersonLocal> _people = [];
   String _search = '';
+
+  /// store which person should open in dubes tab
+  String? _selectedPersonId;
+  String? _selectedPersonName;
 
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
@@ -42,7 +49,9 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadPeople() async {
     final rows = await LocalSqlite.getAllPeople(search: _search);
     if (!mounted) return;
-    setState(() => _people = rows.map((r) => PersonLocal.fromRow(r)).toList());
+    setState(() {
+      _people = rows.map((r) => PersonLocal.fromRow(r)).toList();
+    });
   }
 
   Future<void> _addPerson() async {
@@ -52,19 +61,14 @@ class _HomePageState extends State<HomePage> {
     _nameCtrl.clear();
     await _loadPeople();
 
-    // find newly created person id to open dubes page
+    // find newly created person id
     final rows = await LocalSqlite.getAllPeople(search: name);
     final created = rows.firstWhere(
       (r) => (r['name'] ?? '') == name,
       orElse: () => {},
     );
     if (created.isNotEmpty) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              DubesPage(personId: created['id'], personName: created['name']),
-        ),
-      );
+      _gotoDubes(created['name'], created['id']);
     }
   }
 
@@ -158,15 +162,13 @@ class _HomePageState extends State<HomePage> {
     ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
   }
 
+  /// instead of pushing a new page, just switch tab + remember person
   void _gotoDubes(String personName, String personId) {
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(
-            builder: (_) =>
-                DubesPage(personId: personId, personName: personName),
-          ),
-        )
-        .then((_) => _loadPeople());
+    setState(() {
+      _selectedPersonId = personId;
+      _selectedPersonName = personName;
+      _selectedIndex = 1; // go to Dubes tab
+    });
   }
 
   Widget _buildHomeTab() {
@@ -251,6 +253,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDubesTab() {
+    if (_selectedPersonId != null) {
+      return DubesPage(
+        personId: _selectedPersonId!,
+        personName: _selectedPersonName,
+      );
+    }
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28.0),
@@ -290,10 +298,11 @@ class _HomePageState extends State<HomePage> {
     final user = _auth.currentUser;
     if (user == null) {
       Future.microtask(() {
-        if (mounted)
+        if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const AuthPage()),
           );
+        }
       });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -317,16 +326,18 @@ class _HomePageState extends State<HomePage> {
       drawer: _buildDrawer(user),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 260),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          // slide from right when switching to Dubes, slide to left when back to Home
-          final inFromRight = Tween<Offset>(
+        transitionBuilder: (child, animation) {
+          final slide = Tween<Offset>(
             begin: const Offset(1, 0),
             end: Offset.zero,
           ).animate(animation);
-          return SlideTransition(position: inFromRight, child: child);
+          return SlideTransition(position: slide, child: child);
         },
         child: _selectedIndex == 0
-            ? KeyedSubtree(key: const ValueKey('home'), child: _buildHomeTab())
+            ? KeyedSubtree(
+                key: const ValueKey('home'),
+                child: _buildHomeTab(),
+              )
             : KeyedSubtree(
                 key: const ValueKey('dubes'),
                 child: _buildDubesTab(),
@@ -347,12 +358,15 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: GNav(
               gap: 8,
               selectedIndex: _selectedIndex,
-              onTabChange: (index) => setState(() => _selectedIndex = index),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              onTabChange: (index) =>
+                  setState(() => _selectedIndex = index),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 20, vertical: 10),
               tabs: const [
                 GButton(icon: Icons.home_outlined, text: 'Home'),
                 GButton(icon: Icons.description_outlined, text: 'Dubes'),
