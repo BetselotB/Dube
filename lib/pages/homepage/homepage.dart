@@ -234,23 +234,43 @@ class _HomePageState extends State<HomePage> {
         actions: [IconButton(icon: const Icon(Icons.logout), tooltip: 'Logout', onPressed: _logout)],
       ),
       drawer: _buildDrawer(user),
-      body: AnimatedSwitcher(duration: const Duration(milliseconds: 220), child: _selectedIndex == 0 ? _buildHomeTab() : _buildDubesTab()),
+body: AnimatedSwitcher(
+  duration: const Duration(milliseconds: 260),
+  transitionBuilder: (Widget child, Animation<double> animation) {
+    // slide from right when switching to Dubes, slide to left when back to Home
+    final inFromRight = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(animation);
+    return SlideTransition(position: inFromRight, child: child);
+  },
+  child: _selectedIndex == 0
+      ? KeyedSubtree(key: const ValueKey('home'), child: _buildHomeTab())
+      : KeyedSubtree(key: const ValueKey('dubes'), child: _buildDubesTab()),
+),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           child: Container(
             decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, offset: Offset(0, 4))]),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: GNav(
-              gap: 8,
-              selectedIndex: _selectedIndex,
-              onTabChange: (index) => setState(() => _selectedIndex = index),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              tabs: const [
-                GButton(icon: Icons.home_outlined, text: 'Home'),
-                GButton(icon: Icons.description_outlined, text: 'Dubes'),
-              ],
-            ),
+            child:GNav(
+  gap: 8,
+  selectedIndex: _selectedIndex,
+  onTabChange: (index) {
+    // If user tapped the Dubes tab, open the shared DubesPage route.
+    if (index == 1) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DubesPage()));
+      // keep selected index at home (or update if you prefer)
+      setState(() => _selectedIndex = 0);
+      return;
+    }
+    setState(() => _selectedIndex = index);
+  },
+  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+  tabs: const [
+    GButton(icon: Icons.home_outlined, text: 'Home'),
+    GButton(icon: Icons.description_outlined, text: 'Dubes'),
+  ],
+),
+
           ),
         ),
       ),

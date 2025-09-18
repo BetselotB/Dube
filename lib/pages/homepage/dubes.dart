@@ -1,28 +1,63 @@
 // lib/pages/dubes/dubes.dart
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import '../../src/local_sqlite.dart';
 
 class DubesPage extends StatefulWidget {
-  final String personId;
-  final String personName;
-  const DubesPage({super.key, required this.personId, required this.personName});
+  // personId/personName are optional. If personId==null => show people search/list.
+  final String? personId;
+  final String? personName;
+  const DubesPage({super.key, this.personId, this.personName});
+
+  /// Use this to push with a smooth transition from Home:
+  static Route route({String? personId, String? personName}) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => DubesPage(personId: personId, personName: personName),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // slide from right (or change Offset to (0,1) to slide from bottom)
+        final tween = Tween(begin: const Offset(1, 0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOut));
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
+    );
+  }
 
   @override
   State<DubesPage> createState() => _DubesPageState();
 }
 
 class _DubesPageState extends State<DubesPage> {
+  // For manage mode (when personId != null)
   List<Map<String, dynamic>> _dubes = [];
   final TextEditingController _searchCtrl = TextEditingController();
+
+  // For people list mode (when personId == null)
+  List<Map<String, dynamic>> _people = [];
+  final TextEditingController _peopleSearchCtrl = TextEditingController();
+
+  // bottom nav index: 0 = Home, 1 = Dubes (current)
+  int _selectedIndex = 1;
 
   @override
   void initState() {
     super.initState();
-    _loadDubes();
+    if (widget.personId == null) {
+      _loadPeople();
+    } else {
+      _loadDubes();
+    }
   }
 
+  // ---------- People list mode ----------
+  Future<void> _loadPeople() async {
+    final rows = await LocalSqlite.getAllPeople(search: _peopleSearchCtrl.text);
+    if (!mounted) return;
+    setState(() => _people = rows);
+  }
+
+  // ---------- Manage mode (dubes for person) ----------
   Future<void> _loadDubes() async {
-    final rows = await LocalSqlite.getDubesForPerson(widget.personId, search: _searchCtrl.text);
+    if (widget.personId == null) return;
+    final rows = await LocalSqlite.getDubesForPerson(widget.personId!, search: _searchCtrl.text);
     if (!mounted) return;
     setState(() => _dubes = rows);
   }
@@ -54,7 +89,7 @@ class _DubesPageState extends State<DubesPage> {
     final item = itemCtrl.text.trim();
     final qty = int.tryParse(qtyCtrl.text) ?? 1;
     final price = double.tryParse(priceCtrl.text) ?? 0.0;
-    await LocalSqlite.insertDube(personId: widget.personId, itemName: item, quantity: qty, priceAtTaken: price);
+    await LocalSqlite.insertDube(personId: widget.personId!, itemName: item, quantity: qty, priceAtTaken: price);
     await _loadDubes();
   }
 
@@ -107,50 +142,168 @@ class _DubesPageState extends State<DubesPage> {
     await _loadDubes();
   }
 
+  // When showing people list, delete person functionality:
+  Future<void> _deletePerson(String id) async {
+    final ok = await showDialog<bool?>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Delete person'),
+        content: const Text('Delete this person and their dubes? (soft delete)'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Cancel')),
+          ElevatedButton(onPressed: () => Navigator.of(c).pop(true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await LocalSqlite.deletePerson(id);
+    await _loadPeople();
+  }
+
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _peopleSearchCtrl.dispose();
     super.dispose();
+  }
+
+  Widget _buildPeopleListMode() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: TextField(
+            controller: _peopleSearchCtrl,
+            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search people'),
+            onChanged: (v) => _loadPeople(),
+          ),
+        ),
+        Expanded(
+          child: _people.isEmpty
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.description_outlined, size: 72, color: Colors.indigo.shade400),
+                    const SizedBox(height: 18),
+                    const Text('No people yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    const Text('Add people from the Home tab or use the Add button there.'),
+                  ]),
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadPeople,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    itemCount: _people.length,
+                    separatorBuilder: (_, __) => const Divider(height: 0),
+                    itemBuilder: (context, i) {
+                      final p = _people[i];
+                      final name = p['name'] ?? '—';
+                      final initials = _getInitials(name);
+                      return ListTile(
+                        leading: CircleAvatar(child: Text(initials)),
+                        title: Text(name),
+                        subtitle: Text('\$${(p['total'] ?? 0).toString()}'),
+                        onTap: () {
+                          // Open the same page but in manage mode for the chosen person
+                          Navigator.of(context).push(DubesPage.route(personId: p['id'], personName: p['name'])).then((_) => _loadPeople());
+                        },
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (v) {
+                            if (v == 'delete') _deletePerson(p['id']);
+                          },
+                          itemBuilder: (_) => const [PopupMenuItem(value: 'delete', child: Text('Delete'))],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildManageMode() {
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: TextField(controller: _searchCtrl, decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search item or note'), onChanged: (v) => _loadDubes()),
+      ),
+      Expanded(
+        child: _dubes.isEmpty
+            ? const Center(child: Text('No dubes yet'))
+            : ListView.separated(
+                itemCount: _dubes.length,
+                separatorBuilder: (_, __) => const Divider(height: 0),
+                itemBuilder: (context, i) {
+                  final d = _dubes[i];
+                  final created = DateTime.fromMillisecondsSinceEpoch(d['createdAt'] as int);
+                  return ListTile(
+                    title: Text('${d['itemName'] ?? '—'}  x${d['quantity'] ?? 1}'),
+                    subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('Price: \$${(d['priceAtTaken'] ?? 0).toString()}  •  Amount: \$${(d['amount'] ?? 0).toString()}'),
+                      if ((d['note'] ?? '').toString().isNotEmpty) Text(d['note'] ?? ''),
+                      Text('${created.toLocal()}'),
+                    ]),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (v) {
+                        if (v == 'edit') _editDube(d);
+                        if (v == 'delete') _deleteDube(d);
+                      },
+                      itemBuilder: (_) => const [PopupMenuItem(value: 'edit', child: Text('Edit')), PopupMenuItem(value: 'delete', child: Text('Delete'))],
+                    ),
+                    isThreeLine: true,
+                  );
+                },
+              ),
+      ),
+    ]);
+  }
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty) return 'U';
+    if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();
+    return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
+    final body = widget.personId == null ? _buildPeopleListMode() : _buildManageMode();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dubes — ${widget.personName}'),
-        actions: [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
+        title: Text(widget.personId == null ? 'Dubes — People' : 'Dubes — ${widget.personName ?? 'Person'}'),
+        actions: widget.personId == null ? null : [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
       ),
-      body: Column(children: [
-        Padding(padding: const EdgeInsets.all(12.0), child: TextField(controller: _searchCtrl, decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search item or note'), onChanged: (v) => _loadDubes())),
-        Expanded(
-          child: _dubes.isEmpty
-              ? const Center(child: Text('No dubes yet'))
-              : ListView.separated(
-                  itemCount: _dubes.length,
-                  separatorBuilder: (_, __) => const Divider(height: 0),
-                  itemBuilder: (context, i) {
-                    final d = _dubes[i];
-                    final created = DateTime.fromMillisecondsSinceEpoch(d['createdAt'] as int);
-                    return ListTile(
-                      title: Text('${d['itemName'] ?? '—'}  x${d['quantity'] ?? 1}'),
-                      subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('Price: \$${(d['priceAtTaken'] ?? 0).toString()}  •  Amount: \$${(d['amount'] ?? 0).toString()}'),
-                        if ((d['note'] ?? '').toString().isNotEmpty) Text(d['note'] ?? ''),
-                        Text('${created.toLocal()}'),
-                      ]),
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (v) {
-                          if (v == 'edit') _editDube(d);
-                          if (v == 'delete') _deleteDube(d);
-                        },
-                        itemBuilder: (_) => const [PopupMenuItem(value: 'edit', child: Text('Edit')), PopupMenuItem(value: 'delete', child: Text('Delete'))],
-                      ),
-                      isThreeLine: true,
-                    );
-                  },
-                ),
+      body: body,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          child: Container(
+            decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 8, offset: Offset(0, 4))]),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: GNav(
+              gap: 8,
+              selectedIndex: _selectedIndex,
+              onTabChange: (index) {
+                if (index == _selectedIndex) return;
+                // Home tapped — just pop back to Home for a smooth animation.
+                if (index == 0) {
+                  Navigator.of(context).pop();
+                  return;
+                }
+                // Dubes tapped (index == 1) — stay here
+                setState(() => _selectedIndex = index);
+              },
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              tabs: const [
+                GButton(icon: Icons.home_outlined, text: 'Home'),
+                GButton(icon: Icons.description_outlined, text: 'Dubes'),
+              ],
+            ),
+          ),
         ),
-      ]),
+      ),
     );
   }
 }
