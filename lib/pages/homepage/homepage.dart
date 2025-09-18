@@ -7,8 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 // Removed third-party bottom nav; using a modal bottom sheet for navigation
 import '../../src/local_sqlite.dart';
 import '../auth/auth.dart';
-import '../paywall/paywall_page.dart';
-import '../../services/trial_service.dart';
+// paywall enforcement moved to splash (main.dart)
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -46,29 +45,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _enforcePaywallIfLocked();
     _loadPeople();
-  }
-
-  Future<void> _enforcePaywallIfLocked() async {
-    // If offline and already locked, or online and evaluation says locked, push paywall
-    final offlineLocked = await TrialService.isPaywallLockedOffline();
-    if (offlineLocked) {
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const PaywallPage()),
-        (route) => false,
-      );
-      return;
-    }
-    final locked = await TrialService.evaluateAndPersist();
-    if (!mounted) return;
-    if (locked) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const PaywallPage()),
-        (route) => false,
-      );
-    }
   }
 
   Future<void> _loadPeople() async {

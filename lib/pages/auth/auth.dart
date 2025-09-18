@@ -1,8 +1,7 @@
 import 'package:dube/config.dart';
 import 'package:dube/l10n/app_localizations.dart';
 import 'package:dube/pages/homepage/homepage.dart';
-import 'package:dube/pages/paywall/paywall_page.dart';
-import 'package:dube/services/trial_service.dart';
+// removed paywall enforcement here — handled centrally in main splash
 import 'package:dube/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -100,16 +99,7 @@ class _AuthPageState extends State<AuthPage> {
         _showSnack(t.signupSuccessful);
       }
 
-      // ✅ After successful auth, evaluate trial and route accordingly
-      if (!mounted) return;
-      final locked = await TrialService.evaluateAndPersist();
-      if (!mounted) return;
-      if (locked) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PaywallPage()),
-        );
-      } else {
+      if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomePage()),

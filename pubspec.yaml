@@ -33,6 +33,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_auth: ^6.0.2
   firebase_core: ^4.1.0
+  http: ^1.2.2
   flutter:
     sdk: flutter
   flutter_localization: ^0.3.3

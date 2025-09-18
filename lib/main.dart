@@ -6,10 +6,11 @@ import 'package:dube/pages/homepage/homepage.dart';
 import 'package:dube/pages/paywall/paywall_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'core/locale_provider.dart'; // make sure this file exists
-import 'services/trial_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -156,11 +157,59 @@ class _SplashPageState extends State<SplashPage>
 
       final user = FirebaseAuth.instance.currentUser;
 
-      if (user != null) {
-        // Evaluate trial/paywall before routing
-        final locked = await TrialService.evaluateAndPersist();
+      // Check connectivity first
+      final connectivity = await Connectivity().checkConnectivity();
+      final isOnline = connectivity != ConnectivityResult.none;
+
+      if (user == null) {
+        // Not signed in -> show language selector (as before)
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LanguageSelector()),
+        );
+        return;
+      }
+
+      if (!isOnline) {
+        // Offline: skip paywall checks, allow access
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+        return;
+      }
+
+      // Online and signed in: check Firestore for paywall conditions
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        DateTime? createdAt = _parseFirestoreDate(doc.data()?['createdAt']);
+        final String? paymentStatus = (doc.data()?['paymentStatus']) as String?;
+        DateTime? paidAt = _parseFirestoreDate(doc.data()?['paidAt']);
+
+        final now = DateTime.now();
+
+        bool showPaywall = false;
+
+        if (paymentStatus == null) {
+          // New user: 15-day free trial from createdAt
+          if (createdAt != null) {
+            final trialDays = now.difference(createdAt).inDays;
+            if (trialDays >= 15) showPaywall = true;
+          }
+        } else if (paymentStatus.toLowerCase() == 'unpaid') {
+          // Already marked unpaid => require paywall
+          showPaywall = true;
+        } else if (paymentStatus.toLowerCase() == 'paid') {
+          if (paidAt != null) {
+            final daysSincePaid = now.difference(paidAt).inDays;
+            if (daysSincePaid >= 365) showPaywall = true;
+          }
+        }
+
         if (!mounted) return;
-        if (locked) {
+        if (showPaywall) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const PaywallPage()),
           );
@@ -169,11 +218,12 @@ class _SplashPageState extends State<SplashPage>
             MaterialPageRoute(builder: (_) => const HomePage()),
           );
         }
-      } else {
-        // Not signed in -> show language selector (as before)
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LanguageSelector()),
-        );
+      } catch (e) {
+        // On any error, allow access (fail-open) to avoid blocking legit users
+        if (!mounted) return;
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
       }
     });
   }
@@ -249,4 +299,30 @@ class _SplashPageState extends State<SplashPage>
       ),
     );
   }
+}
+
+// Robustly parse Firestore date-like values into DateTime.
+// Supports Timestamp, ISO8601 string, and Firestore console-like strings.
+DateTime? _parseFirestoreDate(dynamic value) {
+  try {
+    if (value == null) return null;
+    // cloud_firestore Timestamp
+    if (value is Timestamp) return value.toDate();
+    // milliseconds since epoch
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    // ISO-8601 string
+    if (value is String) {
+      // Try direct parse
+      try {
+        return DateTime.parse(value);
+      } catch (_) {
+        // Try parsing Firestore console-like: 'September 9, 2025 at 12:39:35 PM UTC+3'
+        final cleaned = value.replaceAll(' at ', ' ');
+        // Remove literal 'UTC' to keep offset only
+        final withOffset = cleaned.replaceAll('UTC', '').trim();
+        return DateTime.tryParse(withOffset);
+      }
+    }
+  } catch (_) {}
+  return null;
 }
