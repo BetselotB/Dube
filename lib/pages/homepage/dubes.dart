@@ -420,8 +420,8 @@ class _DubesPageState extends State<DubesPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showNavSheet(context),
-        label: const Text('Navigate'),
-        icon: const Icon(Icons.navigation),
+        label: const Text('switch'),
+        icon: const Icon(Icons.switch_access_shortcut),
       ),
     );
   }

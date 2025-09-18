@@ -1,6 +1,7 @@
 // lib/pages/homepage/home.dart
 import 'package:dube/pages/homepage/dubes.dart';
 import 'package:dube/pages/homepage/settings.dart';
+import 'package:dube/pages/homepage/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // Removed third-party bottom nav; using a modal bottom sheet for navigation
@@ -129,9 +130,24 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('Profile'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ProfilePage()),
+                  );
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.help_outline),
                 title: const Text('Help & FAQ'),
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HelpFaqPage()),
+                  );
+                },
               ),
               const Divider(),
               ListTile(
