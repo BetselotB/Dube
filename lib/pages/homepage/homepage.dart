@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('paid'),
+            child: const Text('yes'),
           ),
         ],
       ),
