@@ -36,19 +36,20 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF8D99AE),
-          brightness: Brightness.light,
-        ).copyWith(
-          primary: const Color(0xFF2B2D42),
-          onPrimary: const Color(0xFFFFFFFF),
-          secondary: const Color(0xFF8D99AE),
-          onSecondary: const Color(0xFF2B2D42),
-          surface: const Color(0xFFFFFFFF),
-          onSurface: const Color(0xFF2B2D42),
-          background: const Color(0xFFFFFFFF),
-          onBackground: const Color(0xFF2B2D42),
-        ),
+        colorScheme:
+            ColorScheme.fromSeed(
+              seedColor: const Color(0xFF8D99AE),
+              brightness: Brightness.light,
+            ).copyWith(
+              primary: const Color(0xFF2B2D42),
+              onPrimary: const Color(0xFFFFFFFF),
+              secondary: const Color(0xFF8D99AE),
+              onSecondary: const Color(0xFF2B2D42),
+              surface: const Color(0xFFFFFFFF),
+              onSurface: const Color(0xFF2B2D42),
+              background: const Color(0xFFFFFFFF),
+              onBackground: const Color(0xFF2B2D42),
+            ),
         scaffoldBackgroundColor: const Color(0xFFFFFFFF),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFFFFFFFF),
@@ -65,14 +66,18 @@ class MyApp extends StatelessWidget {
           shadowColor: Color(0xFF2B2D42),
           elevation: 2,
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Color(0xFF2B2D42),
           foregroundColor: Color(0xFFFFFFFF),
         ),
         listTileTheme: ListTileThemeData(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           selectedTileColor: const Color(0xFF8D99AE),
           iconColor: const Color(0xFF2B2D42),
         ),
@@ -91,11 +96,16 @@ class MyApp extends StatelessWidget {
           ),
           filled: true,
           fillColor: Color(0xFFFFFFFF),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             backgroundColor: Color(0xFF2B2D42),
             foregroundColor: Color(0xFFFFFFFF),
             shadowColor: Color(0xFF2B2D42),
@@ -104,14 +114,16 @@ class MyApp extends StatelessWidget {
         ),
         splashColor: const Color(0xFF8D99AE),
         highlightColor: const Color(0xFF8D99AE),
-        pageTransitionsTheme: const PageTransitionsTheme(builders: {
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
-        }),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+          },
+        ),
       ),
       locale: localeProvider.locale, // <-- set locale from provider
       supportedLocales: const [Locale('en'), Locale('am')],
