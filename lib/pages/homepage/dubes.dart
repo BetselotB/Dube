@@ -1,4 +1,5 @@
 // lib/pages/dubes/dubes.dart
+import 'package:dube/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../src/local_sqlite.dart';
 import 'package:intl/intl.dart';
@@ -94,18 +95,18 @@ class _DubesPageState extends State<DubesPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('paid person'),
-        content: const Text(
-          ' Did this person pay you?',
+        title: Text(AppLocalizations.of(context)!.paidPerson),
+        content: Text(
+          AppLocalizations.of(context)!.didPersonPay,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('paid'),
+            child: Text(AppLocalizations.of(context)!.paid),
           ),
         ],
       ),
@@ -134,7 +135,7 @@ class _DubesPageState extends State<DubesPage> {
 
     if (item.isEmpty || price <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter item name and valid price')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.enterItemNameAndValidPrice)),
       );
       return;
     }
@@ -181,40 +182,40 @@ class _DubesPageState extends State<DubesPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Edit Dube'),
+        title: Text(AppLocalizations.of(context)!.editDube),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: itemCtrl,
-              decoration: const InputDecoration(labelText: 'Item name'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.itemName),
             ),
             TextField(
               controller: qtyCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Quantity'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.quantity),
             ),
             TextField(
               controller: priceCtrl,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(labelText: 'Price (per item)'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.pricePerItem),
             ),
             TextField(
               controller: noteCtrl,
-              decoration: const InputDecoration(labelText: 'Note (optional)'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context)!.noteOptional),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -240,19 +241,19 @@ class _DubesPageState extends State<DubesPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Mark as Paid'),
-        content: Text('Are you sure you want to mark this item as paid?'),
+        title: Text(AppLocalizations.of(context)!.markAsPaid),
+        content: Text(AppLocalizations.of(context)!.areYouSureMarkAsPaid),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
             ),
-            child: const Text('Mark as Paid'),
+            child: Text(AppLocalizations.of(context)!.markAsPaid),
           ),
         ],
       ),
@@ -306,7 +307,7 @@ class _DubesPageState extends State<DubesPage> {
                 IconButton(
                   icon: const Icon(Icons.check_circle_outline, color: Colors.green),
                   onPressed: () => _markAsPaid(d['id'], (d['amount'] as num).toDouble()),
-                  tooltip: 'Mark as paid',
+                  tooltip: AppLocalizations.of(context)!.markAsPaid,
                 ),
             ],
           ),
@@ -323,9 +324,9 @@ class _DubesPageState extends State<DubesPage> {
           padding: const EdgeInsets.all(12.0),
           child: TextField(
             controller: _peopleSearchCtrl,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search people',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              hintText: AppLocalizations.of(context)!.searchPeople,
             ),
             onChanged: (_) => _loadPeople(),
           ),
@@ -342,16 +343,16 @@ class _DubesPageState extends State<DubesPage> {
                         color: Color(0xFF2B2D42),
                       ),
                       const SizedBox(height: 18),
-                      const Text(
-                        'No people yet',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.noPeopleYet,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Add people from the Home tab or use the Add button there.',
+                      Text(
+                        AppLocalizations.of(context)!.addPeopleFromHome,
                       ),
                     ],
                   ),
@@ -386,10 +387,10 @@ class _DubesPageState extends State<DubesPage> {
                           onSelected: (v) {
                             if (v == 'paid') _deletePerson(p['id']);
                           },
-                          itemBuilder: (_) => const [
+                          itemBuilder: (_) => [
                             PopupMenuItem(
                               value: 'paid',
-                              child: Text('paid'),
+                              child: Text(AppLocalizations.of(context)!.paid),
                             ),
                           ],
                         ),
@@ -410,7 +411,7 @@ class _DubesPageState extends State<DubesPage> {
           child: TextField(
             controller: _searchCtrl,
             decoration: InputDecoration(
-              labelText: 'Search items...',
+              labelText: AppLocalizations.of(context)!.searchItems,
               prefixIcon: const Icon(Icons.search),
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
@@ -427,7 +428,7 @@ class _DubesPageState extends State<DubesPage> {
         if (!widget.readOnly) _buildInputForm(),
         Expanded(
           child: _dubes.isEmpty
-              ? const Center(child: Text('No dubes yet'))
+              ? Center(child: Text(AppLocalizations.of(context)!.noDubesYet))
               : ListView.builder(
                   itemCount: _dubes.length,
                   itemBuilder: (context, i) {
@@ -451,79 +452,139 @@ class _DubesPageState extends State<DubesPage> {
 
   Widget _buildInputForm() {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      elevation: 2.0,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Item name field
             TextField(
               controller: _itemNameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Item name',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.itemName,
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                isDense: true,
+                suffixIcon: _itemNameCtrl.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 20),
+                        onPressed: () => setState(() => _itemNameCtrl.clear()),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      )
+                    : null,
               ),
               textInputAction: TextInputAction.next,
+              style: const TextStyle(fontSize: 14),
             ),
+            
             const SizedBox(height: 12),
+            
+            // Quantity and price row
             Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _quantityCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Quantity',
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      final qty = int.tryParse(value) ?? 1;
-                      if (qty > 0) {
-                        setState(() => _quantity = qty);
-                      }
-                    },
+                // Quantity controls
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Decrease button
+                      IconButton(
+                        icon: const Icon(Icons.remove, size: 18),
+                        onPressed: _decrementQuantity,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        constraints: const BoxConstraints(),
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          minimumSize: const Size(32, 32),
+                        ),
+                      ),
+                      
+                      // Quantity display
+                      SizedBox(
+                        width: 40,
+                        child: TextField(
+                          controller: _quantityCtrl,
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                          ),
+                          style: const TextStyle(fontSize: 14),
+                          onChanged: (value) {
+                            final qty = int.tryParse(value) ?? 1;
+                            if (qty > 0) {
+                              setState(() => _quantity = qty);
+                            }
+                          },
+                        ),
+                      ),
+                      
+                      // Increase button
+                      IconButton(
+                        icon: const Icon(Icons.add, size: 18),
+                        onPressed: _incrementQuantity,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        constraints: const BoxConstraints(),
+                        style: IconButton.styleFrom(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          minimumSize: const Size(32, 32),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Column(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.add),
-                      onPressed: _incrementQuantity,
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: _decrementQuantity,
-                      style: IconButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
+                
+                const SizedBox(width: 12),
+                
+                // Price field
                 Expanded(
-                  flex: 2,
                   child: TextField(
                     controller: _priceCtrl,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Price',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.price,
                       prefixText: 'ETB ',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      isDense: true,
+                      suffixIcon: _priceCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () => setState(() => _priceCtrl.clear()),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            )
+                          : null,
                     ),
+                    style: const TextStyle(fontSize: 14),
+                    onSubmitted: (_) => _addDube(),
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  icon: const Icon(Icons.add),
-                  onPressed: _addDube,
-                  style: IconButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                
+                const SizedBox(width: 12),
+                
+                // Add button
+                SizedBox(
+                  height: 48,
+                  child: FilledButton.tonalIcon(
+                    onPressed: _addDube,
+                    icon: const Icon(Icons.add, size: 20),
+                    label: Text(AppLocalizations.of(context)!.add, style: const TextStyle(fontSize: 14)),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -538,14 +599,14 @@ class _DubesPageState extends State<DubesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.personName ?? 'Dubes'),
+        title: Text(widget.personName ?? AppLocalizations.of(context)!.dubes),
         actions: widget.personId == null
             ? null
             : [
                 IconButton(
                   onPressed: _addDube,
                   icon: const Icon(Icons.add),
-                  tooltip: 'Add new dube',
+                  tooltip: AppLocalizations.of(context)!.addNewDube,
                 ),
               ],
       ),

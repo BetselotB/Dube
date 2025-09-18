@@ -418,6 +418,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy: your data stays on your device unless you upload a backup.'**
   String get privacy;
+
+  /// No description provided for @paidPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Person'**
+  String get paidPerson;
+
+  /// No description provided for @didPersonPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Did this person pay you?'**
+  String get didPersonPay;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @helpFaq.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & FAQ'**
+  String get helpFaq;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App version {version}'**
+  String appVersion(Object version);
+
+  /// No description provided for @addPersonName.
+  ///
+  /// In en, this message translates to:
+  /// **'Add person name'**
+  String get addPersonName;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get active;
+
+  /// No description provided for @paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paid;
+
+  /// No description provided for @searchPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people'**
+  String get searchPeople;
+
+  /// No description provided for @noPeopleYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No people yet'**
+  String get noPeopleYet;
+
+  /// No description provided for @searchPeopleToViewDubes.
+  ///
+  /// In en, this message translates to:
+  /// **'Search people to view dubes'**
+  String get searchPeopleToViewDubes;
+
+  /// No description provided for @whoOwesYou.
+  ///
+  /// In en, this message translates to:
+  /// **'👋 Who owes you 💸'**
+  String get whoOwesYou;
+
+  /// No description provided for @goToDubes.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Dubes'**
+  String get goToDubes;
+
+  /// No description provided for @goToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get goToHome;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @enterItemNameAndValidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter item name and valid price'**
+  String get enterItemNameAndValidPrice;
+
+  /// No description provided for @editDube.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Dube'**
+  String get editDube;
+
+  /// No description provided for @itemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Item name'**
+  String get itemName;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @pricePerItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (per item)'**
+  String get pricePerItem;
+
+  /// No description provided for @noteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get noteOptional;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @markAsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Paid'**
+  String get markAsPaid;
+
+  /// No description provided for @areYouSureMarkAsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to mark this item as paid?'**
+  String get areYouSureMarkAsPaid;
+
+  /// No description provided for @addPeopleFromHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Add people from the Home tab or use the Add button there.'**
+  String get addPeopleFromHome;
+
+  /// No description provided for @searchItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Search items...'**
+  String get searchItems;
+
+  /// No description provided for @noDubesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No dubes yet'**
+  String get noDubesYet;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @dubes.
+  ///
+  /// In en, this message translates to:
+  /// **'Dubes'**
+  String get dubes;
+
+  /// No description provided for @addNewDube.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new dube'**
+  String get addNewDube;
+
+  /// No description provided for @enterReferenceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a reference/receipt number'**
+  String get enterReferenceNumber;
+
+  /// No description provided for @noUserSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'No user signed in'**
+  String get noUserSignedIn;
+
+  /// No description provided for @paymentReferenceAlreadyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment reference appears to be already used'**
+  String get paymentReferenceAlreadyUsed;
+
+  /// No description provided for @errorProcessingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Error processing payment:'**
+  String get errorProcessingPayment;
+
+  /// No description provided for @errorSelectingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error selecting image:'**
+  String get errorSelectingImage;
+
+  /// No description provided for @couldNotExtractReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not extract reference from image. Please enter it manually.'**
+  String get couldNotExtractReference;
+
+  /// No description provided for @failedToProcessImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to process image. Please try again or enter reference manually.'**
+  String get failedToProcessImage;
+
+  /// No description provided for @errorProcessingImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error processing image:'**
+  String get errorProcessingImage;
+
+  /// No description provided for @invalidVerificationResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid verification response'**
+  String get invalidVerificationResponse;
+
+  /// No description provided for @couldNotVerifyPaymentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not verify payment amount. Please try again.'**
+  String get couldNotVerifyPaymentAmount;
+
+  /// No description provided for @paymentMustBeAtLeast.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment must be at least'**
+  String get paymentMustBeAtLeast;
+
+  /// No description provided for @found.
+  ///
+  /// In en, this message translates to:
+  /// **'Found'**
+  String get found;
+
+  /// No description provided for @paymentVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment verification failed. Please ensure you sent to the correct recipient.'**
+  String get paymentVerificationFailed;
+
+  /// No description provided for @couldNotDetermineTransactionReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not determine transaction reference'**
+  String get couldNotDetermineTransactionReference;
+
+  /// No description provided for @enterValidReferenceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid reference number'**
+  String get enterValidReferenceNumber;
+
+  /// No description provided for @verificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed'**
+  String get verificationFailed;
+
+  /// No description provided for @errorVerifyingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Error verifying payment:'**
+  String get errorVerifyingPayment;
+
+  /// No description provided for @referenceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference Number'**
+  String get referenceNumber;
+
+  /// No description provided for @extractedFromReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracted from receipt'**
+  String get extractedFromReceipt;
+
+  /// No description provided for @verifyPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Payment'**
+  String get verifyPayment;
+
+  /// No description provided for @goPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Premium'**
+  String get goPremium;
+
+  /// No description provided for @freeAccessEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your free access has ended. Unlock unlimited access with a yearly plan.'**
+  String get freeAccessEnded;
+
+  /// No description provided for @yearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearly;
+
+  /// No description provided for @oneYearFullAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'1 year full access'**
+  String get oneYearFullAccess;
+
+  /// No description provided for @unlimitedPeopleAndDubes.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited people and dubes'**
+  String get unlimitedPeopleAndDubes;
+
+  /// No description provided for @cloudBackupAndRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud backup & restore'**
+  String get cloudBackupAndRestore;
+
+  /// No description provided for @priorityUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority updates'**
+  String get priorityUpdates;
+
+  /// No description provided for @whyUpgrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Why upgrade?'**
+  String get whyUpgrade;
+
+  /// No description provided for @payStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to Pay'**
+  String get payStepsTitle;
+
+  /// No description provided for @payStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one of the following accounts to pay:'**
+  String get payStep1;
+
+  /// No description provided for @payStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the payment using your preferred method.'**
+  String get payStep2;
+
+  /// No description provided for @payStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a screenshot or note the transaction ID.'**
+  String get payStep3;
+
+  /// No description provided for @payStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to this app and paste the transaction ID or upload the screenshot.'**
+  String get payStep4;
+
+  /// No description provided for @payStep5.
+  ///
+  /// In en, this message translates to:
+  /// **'Click Verify Payment.'**
+  String get payStep5;
+
+  /// No description provided for @keepHistorySafe.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your history safe with cloud backups'**
+  String get keepHistorySafe;
+
+  /// No description provided for @trackWithoutLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Track without limits all year long'**
+  String get trackWithoutLimits;
+
+  /// No description provided for @supportOngoingDevelopment.
+  ///
+  /// In en, this message translates to:
+  /// **'Support ongoing development'**
+  String get supportOngoingDevelopment;
+
+  /// No description provided for @howToPayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to Pay (Step by Step)'**
+  String get howToPayTitle;
+
+  /// No description provided for @howToPayStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay using one of the options below.'**
+  String get howToPayStep1;
+
+  /// No description provided for @howToPayStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'After payment, copy the Transaction ID or Reference Number.'**
+  String get howToPayStep2;
+
+  /// No description provided for @howToPayStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Return here and enter the ID to unlock premium.'**
+  String get howToPayStep3;
+
+  /// No description provided for @telebirrInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Telebirr (send to this number)'**
+  String get telebirrInstruction;
+
+  /// No description provided for @telebirrNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'251900647953'**
+  String get telebirrNumber;
+
+  /// No description provided for @bankInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Commercial Bank of Ethiopia (digital transfer)'**
+  String get bankInstruction;
+
+  /// No description provided for @bankAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'1000711023015'**
+  String get bankAccount;
+
+  /// No description provided for @choosePaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose payment method'**
+  String get choosePaymentMethod;
+
+  /// No description provided for @telebirr.
+  ///
+  /// In en, this message translates to:
+  /// **'Telebirr'**
+  String get telebirr;
+
+  /// No description provided for @cbeRefSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'CBE (reference + suffix)'**
+  String get cbeRefSuffix;
+
+  /// No description provided for @abyssiniaRefSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Abyssinia (reference + suffix)'**
+  String get abyssiniaRefSuffix;
+
+  /// No description provided for @cbeBirrReceiptPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'CBE Birr (receipt + phone)'**
+  String get cbeBirrReceiptPhone;
+
+  /// No description provided for @uploadReceiptImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload receipt image'**
+  String get uploadReceiptImage;
+
+  /// No description provided for @accountSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Account suffix'**
+  String get accountSuffix;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get phoneNumber;
+
+  /// No description provided for @extractedReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracted reference'**
+  String get extractedReference;
+
+  /// No description provided for @needHelpContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Need help? Contact support@example.com'**
+  String get needHelpContactSupport;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -1,4 +1,5 @@
 // lib/pages/homepage/home.dart
+import 'package:dube/l10n/app_localizations.dart';
 import 'package:dube/pages/homepage/dubes.dart';
 import 'package:dube/components/flag.dart';
 import 'package:dube/pages/homepage/settings.dart';
@@ -90,18 +91,16 @@ class _HomePageState extends State<HomePage> {
     final ok = await showDialog<bool?>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('paid person'),
-        content: const Text(
-          'Did this person pay you?',
-        ),
+        title: Text(AppLocalizations.of(context)!.paidPerson),
+        content: Text(AppLocalizations.of(context)!.didPersonPay),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('yes'),
+            child: Text(AppLocalizations.of(context)!.yes),
           ),
         ],
       ),
@@ -131,7 +130,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.settings),
-                title: const Text('Settings'),
+                title: Text(AppLocalizations.of(context)!.settings),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
@@ -141,7 +140,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.person_outline),
-                title: const Text('Profile'),
+                title: Text(AppLocalizations.of(context)!.profile),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
@@ -151,7 +150,7 @@ class _HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: const Icon(Icons.help_outline),
-                title: const Text('Help & FAQ'),
+                title: Text(AppLocalizations.of(context)!.helpFaq),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
@@ -162,14 +161,14 @@ class _HomePageState extends State<HomePage> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.logout),
-                title: const Text('Logout'),
+                title: Text(AppLocalizations.of(context)!.logout),
                 onTap: _logout,
               ),
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'App version 1.0.0',
+                  AppLocalizations.of(context)!.appVersion('1.0.0'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -204,7 +203,7 @@ class _HomePageState extends State<HomePage> {
 
   // Deleted persons open in read-only dubes view; no separate dialog needed
 
-  Widget _buildHomeTab() {
+  Widget _buildHomeTab(BuildContext context) {
     return Column(
       children: [
         Padding(
@@ -214,8 +213,8 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: TextField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Add person name',
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!.addPersonName,
                     border: OutlineInputBorder(),
                   ),
                   onSubmitted: (_) => _addPerson(),
@@ -235,9 +234,9 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 0, icon: Icon(Icons.people_outline), label: Text('Active')),
-              ButtonSegment(value: 1, icon: Icon(Icons.delete_outline), label: Text('paid')),
+            segments: [
+              ButtonSegment(value: 0, icon: const Icon(Icons.people_outline), label: Text(AppLocalizations.of(context)!.active)),
+              ButtonSegment(value: 1, icon: const Icon(Icons.delete_outline), label: Text(AppLocalizations.of(context)!.paid)),
             ],
             selected: {_showDeleted ? 1 : 0},
             onSelectionChanged: (s) async {
@@ -251,9 +250,9 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: TextField(
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: 'Search people',
+              hintText: AppLocalizations.of(context)!.searchPeople,
             ),
             onChanged: (v) async {
               _search = v;
@@ -264,7 +263,7 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 8),
         Expanded(
           child: _people.isEmpty
-              ? const Center(child: Text('No people yet'))
+              ? Center(child: Text(AppLocalizations.of(context)!.noPeopleYet))
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -301,10 +300,10 @@ class _HomePageState extends State<HomePage> {
                                 onSelected: (v) {
                                   if (v == 'paid') _deletePerson(p.id);
                                 },
-                                itemBuilder: (_) => const [
+                                itemBuilder: (_) => [
                                   PopupMenuItem(
                                     value: 'paid',
-                                    child: Text('paid'),
+                                    child: Text(AppLocalizations.of(context)!.paid),
                                   ),
                                 ],
                               ),
@@ -317,15 +316,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDubesTab() {
+  Widget _buildDubesTab(BuildContext context) {
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           child: SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 0, icon: Icon(Icons.people_outline), label: Text('Active')),
-              ButtonSegment(value: 1, icon: Icon(Icons.delete_outline), label: Text('paid')),
+            segments: [
+              ButtonSegment(value: 0, icon: const Icon(Icons.people_outline), label: Text(AppLocalizations.of(context)!.active)),
+              ButtonSegment(value: 1, icon: const Icon(Icons.delete_outline), label: Text(AppLocalizations.of(context)!.paid)),
             ],
             selected: {_showDeleted ? 1 : 0},
             onSelectionChanged: (s) async {
@@ -339,9 +338,9 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: TextField(
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: 'Search people to view dubes',
+              hintText: AppLocalizations.of(context)!.searchPeopleToViewDubes,
             ),
             onChanged: (v) async {
               _search = v;
@@ -351,7 +350,7 @@ class _HomePageState extends State<HomePage> {
         ),
         Expanded(
           child: _people.isEmpty
-              ? const Center(child: Text('No people yet'))
+              ? Center(child: Text(AppLocalizations.of(context)!.noPeopleYet))
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -388,10 +387,10 @@ class _HomePageState extends State<HomePage> {
                                 onSelected: (v) {
                                   if (v == 'paid') _deletePerson(p.id);
                                 },
-                                itemBuilder: (_) => const [
+                                itemBuilder: (_) => [
                                   PopupMenuItem(
                                     value: 'paid',
-                                    child: Text('paid'),
+                                    child: Text(AppLocalizations.of(context)!.paid),
                                   ),
                                 ],
                               ),
@@ -431,11 +430,11 @@ class _HomePageState extends State<HomePage> {
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: const Text('👋 Who owes you 💸'),
+        title: Text(AppLocalizations.of(context)!.whoOwesYou),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
+            tooltip: AppLocalizations.of(context)!.logout,
             onPressed: _logout,
           ),
         ],
@@ -446,8 +445,8 @@ class _HomePageState extends State<HomePage> {
         physics: const BouncingScrollPhysics(),
         onPageChanged: (i) => setState(() => _currentPageIndex = i),
         children: [
-          _buildHomeTab(),
-          _buildDubesTab(),
+          _buildHomeTab(context),
+          _buildDubesTab(context),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -463,7 +462,7 @@ class _HomePageState extends State<HomePage> {
         label: AnimatedSwitcher(
           duration: const Duration(milliseconds: 180),
           child: Text(
-            _currentPageIndex == 0 ? 'Go to Dubes' : 'Go to Home',
+            _currentPageIndex == 0 ? AppLocalizations.of(context)!.goToDubes : AppLocalizations.of(context)!.goToHome,
             key: ValueKey(_currentPageIndex),
           ),
         ),
@@ -486,88 +485,4 @@ class _HomePageState extends State<HomePage> {
     _pageController.dispose();
     super.dispose();
   }
-}
-
-Widget buildHomeTab({
-  required TextEditingController nameCtrl,
-  required VoidCallback addPerson,
-  required String search,
-  required ValueChanged<String> onSearchChanged,
-  required List<PersonLocal> people,
-  required String Function(String) getInitials,
-  required void Function(String, String) gotoDubes,
-  required void Function(String) deletePerson,
-}) {
-  return Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Add person name',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (_) => addPerson(),
-              ),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: addPerson,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(14),
-              ),
-              child: const Icon(Icons.add),
-            ),
-          ],
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-        child: TextField(
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.search),
-            hintText: 'Search people',
-          ),
-          onChanged: onSearchChanged,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Expanded(
-        child: people.isEmpty
-            ? const Center(child: Text('No people yet'))
-            : ListView.separated(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                itemCount: people.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
-                itemBuilder: (context, i) {
-                  final p = people[i];
-                  final initials = getInitials(p.name);
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(child: Text(initials)),
-                      title: Text(p.name),
-                      subtitle: Text('\$${p.total.toString()}'),
-                      onTap: () => gotoDubes(p.name, p.id),
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (v) {
-                          if (v == 'paid') deletePerson(p.id);
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'paid', child: Text('paid')),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-      ),
-    ],
-  );
 }
