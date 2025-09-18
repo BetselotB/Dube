@@ -18,6 +18,9 @@ class _PaywallPageState extends State<PaywallPage> {
   PaymentMethod _method = PaymentMethod.telebirr;
   bool _loading = false;
   final _verifier = const PaymentVerifierService();
+  static const double _requiredEtb = 1.0;
+  static const String _requiredTelebirrLastTwoDigits = '53'; // Last 2 digits of your Telebirr number
+  static const String _requiredTelebirrReceiverName = 'Betselot Bekele Yenesu'; // Your full name as registered with Telebirr
 
   @override
   void dispose() {
@@ -103,6 +106,32 @@ class _PaywallPageState extends State<PaywallPage> {
         return;
       }
 
+      // Validate amount and (for Telebirr) receiver account/phone
+      final normalized = _normalizePaymentDetails(_method, result.data);
+      final paidAmount = _parseEtbAmount(normalized['amount']?.toString());
+      if (paidAmount == null || paidAmount < _requiredEtb) {
+        _showSnack('Payment must be at least 200 ETB');
+        setState(() => _loading = false);
+        return;
+      }
+      if (_method == PaymentMethod.telebirr) {
+        final rcvRaw = normalized['receiverAccountOrPhone']?.toString() ?? '';
+        final receiverName = normalized['receiverName']?.toString() ?? '';
+      
+        // Check last 2 digits of phone number
+        final lastTwoDigits = rcvRaw.length >= 2 
+            ? rcvRaw.substring(rcvRaw.length - 2) 
+            : '';
+          
+        // Check if payment was made to the correct receiver
+        if (lastTwoDigits != _requiredTelebirrLastTwoDigits ||
+            !receiverName.toLowerCase().contains(_requiredTelebirrReceiverName.toLowerCase())) {
+          _showSnack('Payment verification failed. Please ensure you sent to the correct recipient.');
+          setState(() => _loading = false);
+          return;
+        }  
+      }
+
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         _showSnack('No user signed in');
@@ -126,6 +155,32 @@ class _PaywallPageState extends State<PaywallPage> {
               'createdAt': FieldValue.serverTimestamp(),
             }, SetOptions(merge: false));
       }
+
+      // Save normalized payment details under the user for auditing
+      final paymentId =
+          refKey ??
+          (normalized['reference']?.toString() ??
+              DateTime.now().millisecondsSinceEpoch.toString());
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('payments')
+          .doc(paymentId)
+          .set({
+            'method': _method.name,
+            'reference': normalized['reference'],
+            'provider': normalized['provider'],
+            'payerName': normalized['payerName'],
+            'payerAccountOrPhone': normalized['payerAccountOrPhone'],
+            'receiverName': normalized['receiverName'],
+            'receiverAccountOrPhone': normalized['receiverAccountOrPhone'],
+            'amount': normalized['amount'],
+            'currency': normalized['currency'],
+            'date': normalized['date'],
+            'status': normalized['status'],
+            'raw': result.data,
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
       if (!mounted) return;
       Navigator.of(
@@ -161,6 +216,142 @@ class _PaywallPageState extends State<PaywallPage> {
       if (phone != null && phone.isNotEmpty) parts.add('p:${norm(phone)}');
     }
     return parts.join('|');
+  }
+
+  Map<String, dynamic> _normalizePaymentDetails(
+    PaymentMethod method,
+    Map<String, dynamic>? body,
+  ) {
+    final data = body ?? <String, dynamic>{};
+    String provider = method.name;
+
+    String? payerName;
+    String? payerAccountOrPhone;
+    String? receiverName;
+    String? receiverAccountOrPhone;
+    String? amount;
+    String? currency;
+    String? dateIso;
+    String? reference;
+    String? status;
+
+    switch (method) {
+      case PaymentMethod.telebirr:
+        final d = data['data'] ?? data;
+        provider = 'telebirr';
+        payerName = d['payerName']?.toString();
+        payerAccountOrPhone = d['payerTelebirrNo']?.toString();
+        receiverName = d['creditedPartyName']?.toString();
+        receiverAccountOrPhone = d['creditedPartyAccountNo']?.toString();
+        status = d['transactionStatus']?.toString();
+        reference = d['receiptNo']?.toString();
+        dateIso = d['paymentDate']?.toString();
+        amount = d['totalPaidAmount']?.toString();
+        currency = amount?.contains('Birr') == true ? 'ETB' : null;
+        break;
+      case PaymentMethod.cbe:
+        provider = 'cbe';
+        payerName = data['payer']?.toString();
+        payerAccountOrPhone = data['payerAccount']?.toString();
+        receiverName = data['receiver']?.toString();
+        receiverAccountOrPhone = data['receiverAccount']?.toString();
+        reference = data['reference']?.toString();
+        dateIso = data['date']?.toString();
+        amount = data['amount']?.toString();
+        currency = amount?.contains('ETB') == true ? 'ETB' : null;
+        status = 'Completed';
+        break;
+      case PaymentMethod.dashen:
+        provider = 'dashen';
+        payerName = data['senderName']?.toString();
+        payerAccountOrPhone = data['senderAccountNumber']?.toString();
+        receiverName = data['receiverName']?.toString();
+        receiverAccountOrPhone = data['creditAccount']?.toString();
+        reference =
+            data['transactionReference']?.toString() ??
+            data['transferReference']?.toString();
+        dateIso = data['transactionDate']?.toString();
+        amount = data['total']?.toString();
+        currency = 'ETB';
+        status = 'Completed';
+        break;
+      case PaymentMethod.abyssinia:
+        provider = 'abyssinia';
+        final d = data['data'] ?? data;
+        payerName = d['payer']?.toString();
+        payerAccountOrPhone = d['payerAccount']?.toString();
+        receiverName = d['receiver']?.toString();
+        receiverAccountOrPhone = d['receiverAccount']?.toString();
+        reference = d['reference']?.toString();
+        dateIso = d['date']?.toString();
+        amount = d['amount']?.toString();
+        currency = 'ETB';
+        status = d['success'] == true ? 'Completed' : 'Unknown';
+        break;
+      case PaymentMethod.cbebirr:
+        provider = 'cbebirr';
+        payerName = data['customerName']?.toString();
+        payerAccountOrPhone = data['debitAccount']?.toString();
+        receiverName = data['receiverName']?.toString();
+        receiverAccountOrPhone = data['creditAccount']?.toString();
+        reference =
+            data['reference']?.toString() ?? data['orderId']?.toString();
+        dateIso = data['transactionDate']?.toString();
+        amount = data['paidAmount']?.toString() ?? data['amount']?.toString();
+        currency = 'ETB';
+        status = data['transactionStatus']?.toString();
+        break;
+      case PaymentMethod.image:
+        provider = 'image';
+        final d = data['details'] ?? data;
+        payerName = d['payer']?.toString();
+        payerAccountOrPhone = d['payerAccount']?.toString();
+        receiverName = d['receiver']?.toString();
+        receiverAccountOrPhone = d['receiverAccount']?.toString();
+        reference = data['reference']?.toString() ?? d['reference']?.toString();
+        dateIso = d['date']?.toString();
+        amount = d['amount']?.toString();
+        currency = 'ETB';
+        status = (data['verified'] == true) ? 'Completed' : 'Unknown';
+        break;
+    }
+
+    return {
+      'provider': provider,
+      'payerName': payerName,
+      'payerAccountOrPhone': payerAccountOrPhone,
+      'receiverName': receiverName,
+      'receiverAccountOrPhone': receiverAccountOrPhone,
+      'amount': amount,
+      'currency': currency,
+      'date': dateIso,
+      'reference': reference,
+      'status': status,
+    };
+  }
+
+  // Parse ETB amount across string formats (e.g., "101.00 Birr", "3,000.00 ETB", 73000)
+  double? _parseEtbAmount(String? value) {
+    if (value == null || value.isEmpty) return null;
+    final asNum = double.tryParse(value);
+    if (asNum != null) return asNum;
+    final cleaned = value
+        .replaceAll('ETB', '')
+        .replaceAll('Birr', '')
+        .replaceAll(',', '')
+        .trim();
+    final match = RegExp(r'-?\d+(?:\.\d+)?').firstMatch(cleaned);
+    return match != null ? double.tryParse(match.group(0)!) : null;
+  }
+
+  // Normalize Ethiopian phone to 2519XXXXXXXX when possible
+  String _normalizeMsisdn(String input) {
+    final digits = input.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.startsWith('251')) return digits;
+    if (digits.startsWith('0') && digits.length >= 10)
+      return '251${digits.substring(1)}';
+    if (digits.startsWith('9') && digits.length == 9) return '251$digits';
+    return digits;
   }
 
   @override
