@@ -8,7 +8,8 @@ class DubesPage extends StatefulWidget {
   /// If [personId] is provided, show dubes management for that person.
   final String? personId;
   final String? personName;
-  const DubesPage({super.key, this.personId, this.personName});
+  final bool readOnly;
+  const DubesPage({super.key, this.personId, this.personName, this.readOnly = false});
 
   /// Push this with a slide transition from Home
   static Route route({String? personId, String? personName}) {
@@ -93,9 +94,9 @@ class _DubesPageState extends State<DubesPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Delete person'),
+        title: const Text('paid person'),
         content: const Text(
-          'Delete this person and their dubes? (soft delete)',
+          ' Did this person pay you?',
         ),
         actions: [
           TextButton(
@@ -104,7 +105,7 @@ class _DubesPageState extends State<DubesPage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Delete'),
+            child: const Text('paid'),
           ),
         ],
       ),
@@ -126,6 +127,7 @@ class _DubesPageState extends State<DubesPage> {
   }
 
   Future<void> _addDube() async {
+    if (widget.readOnly) return;
     final item = _itemNameCtrl.text.trim();
     final qty = int.tryParse(_quantityCtrl.text) ?? 1;
     final price = double.tryParse(_priceCtrl.text) ?? 0.0;
@@ -166,6 +168,7 @@ class _DubesPageState extends State<DubesPage> {
   }
 
   Future<void> _editDube(Map<String, dynamic> d) async {
+    if (widget.readOnly) return;
     final itemCtrl = TextEditingController(text: d['itemName'] ?? '');
     final qtyCtrl = TextEditingController(
       text: (d['quantity'] ?? 1).toString(),
@@ -231,28 +234,7 @@ class _DubesPageState extends State<DubesPage> {
     await _loadDubes();
   }
 
-  Future<void> _deleteDube(Map<String, dynamic> d) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: const Text('Delete Dube'),
-        content: const Text('Are you sure?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('No'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    await LocalSqlite.deleteDube(d['id'] as String);
-    await _loadDubes();
-  }
+  // delete dube handled by markAsPaid for now
 
   Future<void> _markAsPaid(String id, double amount) async {
     final confirmed = await showDialog<bool>(
@@ -320,11 +302,12 @@ class _DubesPageState extends State<DubesPage> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-                onPressed: () => _markAsPaid(d['id'], (d['amount'] as num).toDouble()),
-                tooltip: 'Mark as paid',
-              ),
+              if (!widget.readOnly)
+                IconButton(
+                  icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+                  onPressed: () => _markAsPaid(d['id'], (d['amount'] as num).toDouble()),
+                  tooltip: 'Mark as paid',
+                ),
             ],
           ),
         ),
@@ -401,12 +384,12 @@ class _DubesPageState extends State<DubesPage> {
                         },
                         trailing: PopupMenuButton<String>(
                           onSelected: (v) {
-                            if (v == 'delete') _deletePerson(p['id']);
+                            if (v == 'paid') _deletePerson(p['id']);
                           },
                           itemBuilder: (_) => const [
                             PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete'),
+                              value: 'paid',
+                              child: Text('paid'),
                             ),
                           ],
                         ),
@@ -441,7 +424,7 @@ class _DubesPageState extends State<DubesPage> {
             onChanged: (_) => _loadDubes(),
           ),
         ),
-        _buildInputForm(),
+        if (!widget.readOnly) _buildInputForm(),
         Expanded(
           child: _dubes.isEmpty
               ? const Center(child: Text('No dubes yet'))
@@ -457,10 +440,7 @@ class _DubesPageState extends State<DubesPage> {
     );
   }
 
-  String _formatTimestamp(int millis) {
-    final dtLocal = DateTime.fromMillisecondsSinceEpoch(millis).toLocal();
-    return DateFormat('MMM d, y • h:mm a').format(dtLocal);
-  }
+  // kept for future use if needed
 
   String _getInitials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));

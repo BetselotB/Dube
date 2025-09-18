@@ -47,6 +47,7 @@ class _HomePageState extends State<HomePage> {
   String _search = '';
   final PageController _pageController = PageController(initialPage: 0);
   int _currentPageIndex = 0;
+  bool _showDeleted = false;
 
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
@@ -57,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadPeople() async {
-    final rows = await LocalSqlite.getAllPeople(search: _search);
+    final rows = await LocalSqlite.getPeople(search: _search, deleted: _showDeleted);
     if (!mounted) return;
     setState(() => _people = rows.map((r) => PersonLocal.fromRow(r)).toList());
   }
@@ -89,9 +90,9 @@ class _HomePageState extends State<HomePage> {
     final ok = await showDialog<bool?>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Delete person'),
+        title: const Text('paid person'),
         content: const Text(
-          'Delete this person and their dubes? (soft delete)',
+          'Did this person pay you?',
         ),
         actions: [
           TextButton(
@@ -100,7 +101,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Delete'),
+            child: const Text('paid'),
           ),
         ],
       ),
@@ -190,16 +191,18 @@ class _HomePageState extends State<HomePage> {
 
   // removed obsolete bottom sheet switcher (replaced by PageView + FAB)
 
-  void _gotoDubes(String personName, String personId) {
+  void _gotoDubes(String personName, String personId, {bool readOnly = false}) {
     Navigator.of(context)
         .push(
           MaterialPageRoute(
             builder: (_) =>
-                DubesPage(personId: personId, personName: personName),
+                DubesPage(personId: personId, personName: personName, readOnly: readOnly),
           ),
         )
         .then((_) => _loadPeople());
   }
+
+  // Deleted persons open in read-only dubes view; no separate dialog needed
 
   Widget _buildHomeTab() {
     return Column(
@@ -220,13 +223,29 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: _addPerson,
+                onPressed: _showDeleted ? null : _addPerson,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(14),
                 ),
                 child: const Icon(Icons.add),
               ),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: SegmentedButton<int>(
+            segments: const [
+              ButtonSegment(value: 0, icon: Icon(Icons.people_outline), label: Text('Active')),
+              ButtonSegment(value: 1, icon: Icon(Icons.delete_outline), label: Text('paid')),
+            ],
+            selected: {_showDeleted ? 1 : 0},
+            onSelectionChanged: (s) async {
+              final v = s.first;
+              setState(() => _showDeleted = v == 1);
+              await _loadPeople();
+            },
+            showSelectedIcon: false,
           ),
         ),
         Padding(
@@ -275,18 +294,20 @@ class _HomePageState extends State<HomePage> {
                         ),
                         title: Text(p.name),
                         subtitle: Text('\$${p.total.toString()}'),
-                        onTap: () => _gotoDubes(p.name, p.id),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (v) {
-                            if (v == 'delete') _deletePerson(p.id);
-                          },
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete'),
-                            ),
-                          ],
-                        ),
+                        onTap: () => _gotoDubes(p.name, p.id, readOnly: _showDeleted),
+                        trailing: _showDeleted
+                            ? null
+                            : PopupMenuButton<String>(
+                                onSelected: (v) {
+                                  if (v == 'paid') _deletePerson(p.id);
+                                },
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(
+                                    value: 'paid',
+                                    child: Text('paid'),
+                                  ),
+                                ],
+                              ),
                       ),
                     );
                   },
@@ -299,6 +320,22 @@ class _HomePageState extends State<HomePage> {
   Widget _buildDubesTab() {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          child: SegmentedButton<int>(
+            segments: const [
+              ButtonSegment(value: 0, icon: Icon(Icons.people_outline), label: Text('Active')),
+              ButtonSegment(value: 1, icon: Icon(Icons.delete_outline), label: Text('paid')),
+            ],
+            selected: {_showDeleted ? 1 : 0},
+            onSelectionChanged: (s) async {
+              final v = s.first;
+              setState(() => _showDeleted = v == 1);
+              await _loadPeople();
+            },
+            showSelectedIcon: false,
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: TextField(
@@ -344,18 +381,20 @@ class _HomePageState extends State<HomePage> {
                         ),
                         title: Text(p.name),
                         subtitle: Text('\$${p.total.toString()}'),
-                        onTap: () => _gotoDubes(p.name, p.id),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (v) {
-                            if (v == 'delete') _deletePerson(p.id);
-                          },
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete'),
-                            ),
-                          ],
-                        ),
+                        onTap: () => _gotoDubes(p.name, p.id, readOnly: _showDeleted),
+                        trailing: _showDeleted
+                            ? null
+                            : PopupMenuButton<String>(
+                                onSelected: (v) {
+                                  if (v == 'paid') _deletePerson(p.id);
+                                },
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(
+                                    value: 'paid',
+                                    child: Text('paid'),
+                                  ),
+                                ],
+                              ),
                       ),
                     );
                   },
@@ -424,7 +463,7 @@ class _HomePageState extends State<HomePage> {
         label: AnimatedSwitcher(
           duration: const Duration(milliseconds: 180),
           child: Text(
-            _currentPageIndex == 0 ? 'Dubes' : 'Home',
+            _currentPageIndex == 0 ? 'Go to Dubes' : 'Go to Home',
             key: ValueKey(_currentPageIndex),
           ),
         ),
@@ -518,10 +557,10 @@ Widget buildHomeTab({
                       onTap: () => gotoDubes(p.name, p.id),
                       trailing: PopupMenuButton<String>(
                         onSelected: (v) {
-                          if (v == 'delete') deletePerson(p.id);
+                          if (v == 'paid') deletePerson(p.id);
                         },
                         itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                          PopupMenuItem(value: 'paid', child: Text('paid')),
                         ],
                       ),
                     ),

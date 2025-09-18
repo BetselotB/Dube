@@ -72,6 +72,15 @@ class LocalSqlite {
     return rows;
   }
 
+  static Future<List<Map<String, dynamic>>> getPeople({String search = '', bool deleted = false}) async {
+    await init();
+    final uid = _uid();
+    final where = "deleted = ${deleted ? 1 : 0} AND userId = ?${search.isNotEmpty ? " AND name LIKE ?" : ""}";
+    final args = search.isNotEmpty ? [uid, '%$search%'] : [uid];
+    final rows = await _db!.rawQuery('SELECT * FROM people WHERE $where ORDER BY createdAt ASC', args);
+    return rows;
+  }
+
   static Future<void> insertPerson(String name) async {
     await init();
     final uid = _uid();
@@ -84,7 +93,6 @@ class LocalSqlite {
     await init();
     final uid = _uid();
     await _db!.update('people', {'deleted': 1}, where: 'id = ? AND userId = ?', whereArgs: [id, uid]);
-    await _db!.delete('dubes', where: 'personId = ? AND userId = ?', whereArgs: [id, uid]);
   }
 
   // Dubes CRUD
