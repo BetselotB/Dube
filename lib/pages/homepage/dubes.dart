@@ -1,7 +1,6 @@
 // lib/pages/dubes/dubes.dart
 import 'package:flutter/material.dart';
 import '../../src/local_sqlite.dart';
-import 'homepage.dart';
 
 class DubesPage extends StatefulWidget {
   /// If [personId] is null, show people list mode.
@@ -417,48 +416,6 @@ class _DubesPageState extends State<DubesPage> {
             : [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
       ),
       body: body,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showNavSheet(context),
-        label: const Text('switch'),
-        icon: const Icon(Icons.switch_access_shortcut),
-      ),
-    );
-  }
-
-  void _showNavSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (c) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.of(c).pop();
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const HomePage()),
-                  (route) => route.isFirst,
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.description_outlined),
-              title: const Text('Dubes'),
-              onTap: () {
-                Navigator.of(c).pop();
-                // Stay on Dubes
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
     );
   }
 }

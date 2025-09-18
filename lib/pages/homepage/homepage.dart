@@ -38,6 +38,8 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _nameCtrl = TextEditingController();
   List<PersonLocal> _people = [];
   String _search = '';
+  final PageController _pageController = PageController(initialPage: 0);
+  int _currentPageIndex = 0;
 
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
@@ -203,40 +205,7 @@ class _HomePageState extends State<HomePage> {
     ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
   }
 
-  void _showNavSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (c) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.of(c).pop();
-                // Already on Home; do nothing
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.description_outlined),
-              title: const Text('Dubes'),
-              onTap: () {
-                Navigator.of(c).pop();
-                Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const DubesPage()));
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
+  // removed obsolete bottom sheet switcher (replaced by PageView + FAB)
 
   void _gotoDubes(String personName, String personId) {
     Navigator.of(context)
@@ -330,7 +299,60 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Removed: _buildDubesTab (navigation handled via modal sheet)
+  Widget _buildDubesTab() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          child: TextField(
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search people to view dubes',
+            ),
+            onChanged: (v) async {
+              _search = v;
+              await _loadPeople();
+            },
+          ),
+        ),
+        Expanded(
+          child: _people.isEmpty
+              ? const Center(child: Text('No people yet'))
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  itemCount: _people.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, i) {
+                    final p = _people[i];
+                    final initials = _getInitials(p.name);
+                    return Card(
+                      child: ListTile(
+                        leading: CircleAvatar(child: Text(initials)),
+                        title: Text(p.name),
+                        subtitle: Text('\$${p.total.toString()}'),
+                        onTap: () => _gotoDubes(p.name, p.id),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (v) {
+                            if (v == 'delete') _deletePerson(p.id);
+                          },
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
 
   String _getInitials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));
@@ -369,12 +391,30 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: _buildDrawer(user),
-      body: _buildHomeTab(),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (i) => setState(() => _currentPageIndex = i),
+        children: [
+          _buildHomeTab(),
+          _buildDubesTab(),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showNavSheet(context),
-        label: const Text('switch'),
-        icon: const Icon(Icons.switch_access_shortcut),
+        onPressed: () {
+          final target = _currentPageIndex == 0 ? 1 : 0;
+          _pageController.animateToPage(
+            target,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        label: Text(_currentPageIndex == 0 ? 'Dubes' : 'Home'),
+        icon: Icon(
+          _currentPageIndex == 0
+              ? Icons.description_outlined
+              : Icons.home_outlined,
+        ),
       ),
     );
   }
@@ -382,6 +422,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 }
