@@ -3,7 +3,7 @@ import 'package:dube/pages/homepage/dubes.dart';
 import 'package:dube/pages/homepage/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+// Removed third-party bottom nav; using a modal bottom sheet for navigation
 import '../../src/local_sqlite.dart';
 import '../auth/auth.dart';
 
@@ -20,23 +20,21 @@ class PersonLocal {
   final num total;
   PersonLocal({required this.id, required this.name, required this.total});
 
-  factory PersonLocal.fromRow(Map<String, dynamic> r) => PersonLocal(
-        id: r['id'],
-        name: r['name'],
-        total: r['total'] ?? 0,
+  factory PersonLocal.fromRow(Map<String, dynamic> r) =>
+      PersonLocal(id: r['id'], name: r['name'], total: r['total'] ?? 0);
+
+  static PersonLocal fromMap(Map<String, dynamic> p) => PersonLocal(
+        id: p['id'],
+        name: (p['name'] ?? '').toString(),
+        total: p['total'] ?? 0,
       );
 }
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _nameCtrl = TextEditingController();
-  int _selectedIndex = 0;
   List<PersonLocal> _people = [];
   String _search = '';
-
-  /// store which person should open in dubes tab
-  String? _selectedPersonId;
-  String? _selectedPersonName;
 
   FirebaseAuth get _auth => FirebaseAuth.instance;
 
@@ -49,9 +47,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadPeople() async {
     final rows = await LocalSqlite.getAllPeople(search: _search);
     if (!mounted) return;
-    setState(() {
-      _people = rows.map((r) => PersonLocal.fromRow(r)).toList();
-    });
+    setState(() => _people = rows.map((r) => PersonLocal.fromRow(r)).toList());
   }
 
   Future<void> _addPerson() async {
@@ -61,14 +57,19 @@ class _HomePageState extends State<HomePage> {
     _nameCtrl.clear();
     await _loadPeople();
 
-    // find newly created person id
+    // find newly created person id to open dubes page
     final rows = await LocalSqlite.getAllPeople(search: name);
     final created = rows.firstWhere(
       (r) => (r['name'] ?? '') == name,
       orElse: () => {},
     );
     if (created.isNotEmpty) {
-      _gotoDubes(created['name'], created['id']);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              DubesPage(personId: created['id'], personName: created['name']),
+        ),
+      );
     }
   }
 
@@ -162,13 +163,52 @@ class _HomePageState extends State<HomePage> {
     ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
   }
 
-  /// instead of pushing a new page, just switch tab + remember person
+  void _showNavSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (c) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.home_outlined),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.of(c).pop();
+                // Already on Home; do nothing
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: const Text('Dubes'),
+              onTap: () {
+                Navigator.of(c).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const DubesPage(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _gotoDubes(String personName, String personId) {
-    setState(() {
-      _selectedPersonId = personId;
-      _selectedPersonName = personName;
-      _selectedIndex = 1; // go to Dubes tab
-    });
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) =>
+                DubesPage(personId: personId, personName: personName),
+          ),
+        )
+        .then((_) => _loadPeople());
   }
 
   Widget _buildHomeTab() {
@@ -252,39 +292,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildDubesTab() {
-    if (_selectedPersonId != null) {
-      return DubesPage(
-        personId: _selectedPersonId!,
-        personName: _selectedPersonName,
-      );
-    }
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 28.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.description_outlined,
-              size: 72,
-              color: Colors.indigo.shade400,
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Dubes',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Select a person from Home to view their dubes (transactions).',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Removed: _buildDubesTab (navigation handled via modal sheet)
 
   String _getInitials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));
@@ -298,11 +306,10 @@ class _HomePageState extends State<HomePage> {
     final user = _auth.currentUser;
     if (user == null) {
       Future.microtask(() {
-        if (mounted) {
+        if (mounted)
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const AuthPage()),
           );
-        }
       });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -324,56 +331,12 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: _buildDrawer(user),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        transitionBuilder: (child, animation) {
-          final slide = Tween<Offset>(
-            begin: const Offset(1, 0),
-            end: Offset.zero,
-          ).animate(animation);
-          return SlideTransition(position: slide, child: child);
-        },
-        child: _selectedIndex == 0
-            ? KeyedSubtree(
-                key: const ValueKey('home'),
-                child: _buildHomeTab(),
-              )
-            : KeyedSubtree(
-                key: const ValueKey('dubes'),
-                child: _buildDubesTab(),
-              ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.06),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: GNav(
-              gap: 8,
-              selectedIndex: _selectedIndex,
-              onTabChange: (index) =>
-                  setState(() => _selectedIndex = index),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 20, vertical: 10),
-              tabs: const [
-                GButton(icon: Icons.home_outlined, text: 'Home'),
-                GButton(icon: Icons.description_outlined, text: 'Dubes'),
-              ],
-            ),
-          ),
-        ),
+      body: _buildHomeTab(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showNavSheet(context),
+        label: const Text('switch'),
+        icon: const Icon(Icons.switch_access_shortcut),
       ),
     );
   }
@@ -383,4 +346,88 @@ class _HomePageState extends State<HomePage> {
     _nameCtrl.dispose();
     super.dispose();
   }
+}
+
+Widget buildHomeTab({
+  required TextEditingController nameCtrl,
+  required VoidCallback addPerson,
+  required String search,
+  required ValueChanged<String> onSearchChanged,
+  required List<PersonLocal> people,
+  required String Function(String) getInitials,
+  required void Function(String, String) gotoDubes,
+  required void Function(String) deletePerson,
+}) {
+  return Column(
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Add person name',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => addPerson(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: addPerson,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(14),
+              ),
+              child: const Icon(Icons.add),
+            ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: TextField(
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.search),
+            hintText: 'Search people',
+          ),
+          onChanged: onSearchChanged,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Expanded(
+        child: people.isEmpty
+            ? const Center(child: Text('No people yet'))
+            : ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                itemCount: people.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, i) {
+                  final p = people[i];
+                  final initials = getInitials(p.name);
+                  return Card(
+                    child: ListTile(
+                      leading: CircleAvatar(child: Text(initials)),
+                      title: Text(p.name),
+                      subtitle: Text('\$${p.total.toString()}'),
+                      onTap: () => gotoDubes(p.name, p.id),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (v) {
+                          if (v == 'delete') deletePerson(p.id);
+                        },
+                        itemBuilder: (_) => const [
+                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+      ),
+    ],
+  );
 }

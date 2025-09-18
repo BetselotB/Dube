@@ -1,7 +1,7 @@
 // lib/pages/dubes/dubes.dart
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import '../../src/local_sqlite.dart';
+import 'homepage.dart';
 
 class DubesPage extends StatefulWidget {
   /// If [personId] is null, show people list mode.
@@ -38,8 +38,7 @@ class _DubesPageState extends State<DubesPage> {
   List<Map<String, dynamic>> _people = [];
   final TextEditingController _peopleSearchCtrl = TextEditingController();
 
-  // Bottom nav state
-  int _selectedIndex = 1;
+  // No bottom nav here; this page focuses on either people or a person's dubes
 
   @override
   void initState() {
@@ -117,10 +116,10 @@ class _DubesPageState extends State<DubesPage> {
             ),
             TextField(
               controller: priceCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Price (per item)',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
+              decoration: const InputDecoration(labelText: 'Price (per item)'),
             ),
           ],
         ),
@@ -153,9 +152,12 @@ class _DubesPageState extends State<DubesPage> {
 
   Future<void> _editDube(Map<String, dynamic> d) async {
     final itemCtrl = TextEditingController(text: d['itemName'] ?? '');
-    final qtyCtrl = TextEditingController(text: (d['quantity'] ?? 1).toString());
-    final priceCtrl =
-        TextEditingController(text: (d['priceAtTaken'] ?? 0).toString());
+    final qtyCtrl = TextEditingController(
+      text: (d['quantity'] ?? 1).toString(),
+    );
+    final priceCtrl = TextEditingController(
+      text: (d['priceAtTaken'] ?? 0).toString(),
+    );
     final noteCtrl = TextEditingController(text: d['note'] ?? '');
 
     final ok = await showDialog<bool>(
@@ -176,10 +178,10 @@ class _DubesPageState extends State<DubesPage> {
             ),
             TextField(
               controller: priceCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Price (per item)',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
+              decoration: const InputDecoration(labelText: 'Price (per item)'),
             ),
             TextField(
               controller: noteCtrl,
@@ -265,13 +267,18 @@ class _DubesPageState extends State<DubesPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.description_outlined,
-                          size: 72, color: Colors.indigo.shade400),
+                      Icon(
+                        Icons.description_outlined,
+                        size: 72,
+                        color: Colors.indigo.shade400,
+                      ),
                       const SizedBox(height: 18),
                       const Text(
                         'No people yet',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -283,8 +290,10 @@ class _DubesPageState extends State<DubesPage> {
               : RefreshIndicator(
                   onRefresh: _loadPeople,
                   child: ListView.separated(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     itemCount: _people.length,
                     separatorBuilder: (_, __) => const Divider(height: 0),
                     itemBuilder: (context, i) {
@@ -392,8 +401,9 @@ class _DubesPageState extends State<DubesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final body =
-        widget.personId == null ? _buildPeopleListMode() : _buildManageMode();
+    final body = widget.personId == null
+        ? _buildPeopleListMode()
+        : _buildManageMode();
 
     return Scaffold(
       appBar: AppBar(
@@ -407,40 +417,46 @@ class _DubesPageState extends State<DubesPage> {
             : [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
       ),
       body: body,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.06),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: GNav(
-              gap: 8,
-              selectedIndex: _selectedIndex,
-              onTabChange: (index) {
-                if (index == 0) {
-                  Navigator.of(context).pop(); // go back to Home
-                } else {
-                  setState(() => _selectedIndex = index);
-                }
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showNavSheet(context),
+        label: const Text('Navigate'),
+        icon: const Icon(Icons.navigation),
+      ),
+    );
+  }
+
+  void _showNavSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (c) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.home_outlined),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.of(c).pop();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const HomePage()),
+                  (route) => route.isFirst,
+                );
               },
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              tabs: const [
-                GButton(icon: Icons.home_outlined, text: 'Home'),
-                GButton(icon: Icons.description_outlined, text: 'Dubes'),
-              ],
             ),
-          ),
+            ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: const Text('Dubes'),
+              onTap: () {
+                Navigator.of(c).pop();
+                // Stay on Dubes
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
         ),
       ),
     );
