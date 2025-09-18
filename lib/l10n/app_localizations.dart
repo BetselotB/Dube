@@ -101,6 +101,18 @@ abstract class AppLocalizations {
   /// **'Dube App'**
   String get appTitle;
 
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'Dube'**
+  String get appName;
+
   /// No description provided for @login.
   ///
   /// In en, this message translates to:
@@ -137,6 +149,36 @@ abstract class AppLocalizations {
   /// **'Confirm Password'**
   String get confirmPassword;
 
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get name;
+
+  /// No description provided for @fillAllFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in all fields.'**
+  String get fillAllFields;
+
+  /// No description provided for @passwordsDontMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match.'**
+  String get passwordsDontMatch;
+
+  /// No description provided for @loginSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged in successfully.'**
+  String get loginSuccessful;
+
+  /// No description provided for @signupSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created.'**
+  String get signupSuccessful;
+
   /// No description provided for @or.
   ///
   /// In en, this message translates to:
@@ -154,6 +196,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google sign-in not implemented'**
   String get googleSignInPlaceholder;
+
+  /// No description provided for @googleSignInCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in cancelled.'**
+  String get googleSignInCancelled;
+
+  /// No description provided for @googleSignInSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in with Google.'**
+  String get googleSignInSuccess;
 
   /// No description provided for @termsHint.
   ///
@@ -209,47 +263,161 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get next;
 
-  /// No description provided for @name.
+  /// No description provided for @waitingDirection.
   ///
   /// In en, this message translates to:
-  /// **'Full name'**
-  String get name;
+  /// **'Loading...'**
+  String get waitingDirection;
 
-  /// No description provided for @fillAllFields.
+  /// No description provided for @settingsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Please fill in all fields.'**
-  String get fillAllFields;
+  /// **'Settings'**
+  String get settingsTitle;
 
-  /// No description provided for @passwordsDontMatch.
+  /// No description provided for @backupToCloud.
   ///
   /// In en, this message translates to:
-  /// **'Passwords do not match.'**
-  String get passwordsDontMatch;
+  /// **'Backup to Cloud'**
+  String get backupToCloud;
 
-  /// No description provided for @loginSuccessful.
+  /// No description provided for @backupHint.
   ///
   /// In en, this message translates to:
-  /// **'Logged in successfully.'**
-  String get loginSuccessful;
+  /// **'Upload a cloud backup so you can restore later'**
+  String get backupHint;
 
-  /// No description provided for @signupSuccessful.
+  /// No description provided for @backup.
   ///
   /// In en, this message translates to:
-  /// **'Account created.'**
-  String get signupSuccessful;
+  /// **'Backup'**
+  String get backup;
 
-  /// No description provided for @googleSignInCancelled.
+  /// No description provided for @exportBackup.
   ///
   /// In en, this message translates to:
-  /// **'Google sign-in cancelled.'**
-  String get googleSignInCancelled;
+  /// **'Export backup (share file)'**
+  String get exportBackup;
 
-  /// No description provided for @googleSignInSuccess.
+  /// No description provided for @exportHint.
   ///
   /// In en, this message translates to:
-  /// **'Signed in with Google.'**
-  String get googleSignInSuccess;
+  /// **'Create a local file you can share or store'**
+  String get exportHint;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @restoreFromCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from Cloud'**
+  String get restoreFromCloud;
+
+  /// No description provided for @restoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore latest backup from cloud (overwrites local data)'**
+  String get restoreHint;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @analytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analytics;
+
+  /// No description provided for @analyticsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Share anonymous usage data to improve the app'**
+  String get analyticsHint;
+
+  /// No description provided for @autoBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto backup'**
+  String get autoBackup;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Change app language'**
+  String get languageHint;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About & help'**
+  String get about;
+
+  /// No description provided for @aboutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Help, FAQ and privacy'**
+  String get aboutHint;
+
+  /// No description provided for @aboutText.
+  ///
+  /// In en, this message translates to:
+  /// **'Dube helps you track who owes what.'**
+  String get aboutText;
+
+  /// No description provided for @shareApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share app'**
+  String get shareApp;
+
+  /// No description provided for @guest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
+  String get guest;
+
+  /// No description provided for @notSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Not signed in'**
+  String get notSignedIn;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy: your data stays on your device unless you upload a backup.'**
+  String get privacy;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
