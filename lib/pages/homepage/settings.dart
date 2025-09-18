@@ -5,8 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart'; // for XFile used by shareXFiles
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../src/local_sqlite.dart';
+import '../../core/locale_provider.dart';
+import '../../l10n/app_localizations.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -141,11 +144,11 @@ class _SettingsPageState extends State<SettingsPage> {
     _showSnack(next ? (AppLocalizations.of(context)?.analytics ?? 'Analytics enabled') : (AppLocalizations.of(context)?.analytics ?? 'Analytics disabled'));
   }
 
-  // Future<void> _toggleAutoBackup(bool next) async {
-  //   setState(() => _autoBackup = next);
-  //   await _setPref('auto_backup', next);
-  //   _showSnack(next ? AppLocalizations.of(context)?.autoBackup ?? 'Auto-backup enabled' : AppLocalizations.of(context)?.autoBackup ?? 'Auto-backup disabled');
-  // }
+  Future<void> _toggleAutoBackup(bool next) async {
+    setState(() => _autoBackup = next);
+    await _setPref('auto_backup', next);
+    _showSnack(next ? AppLocalizations.of(context)?.autoBackup ?? 'Auto-backup enabled' : AppLocalizations.of(context)?.autoBackup ?? 'Auto-backup disabled');
+  }
 
   // ---------------- language ----------------
   Future<void> _changeLanguage(Locale locale) async {
@@ -292,16 +295,16 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                         ),
                         // Auto-backup toggle
-                        // Padding(
-                        //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-                        //   child: Row(
-                        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        //     children: [
-                        //       Expanded(child: Text(t.autoBackup, style: const TextStyle(fontWeight: FontWeight.w600))),
-                        //       Switch(value: _autoBackup, onChanged: (v) => _toggleAutoBackup(v)),
-                        //     ],
-                        //   ),
-                        // ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: Text(t.autoBackup, style: const TextStyle(fontWeight: FontWeight.w600))),
+                              Switch(value: _autoBackup, onChanged: (v) => _toggleAutoBackup(v)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -315,7 +318,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   elevation: 2,
                   child: Column(
                     children: [
-                      
+                      ListTile(
+                        leading: const Icon(Icons.analytics_outlined),
+                        title: Text(t.analytics),
+                        subtitle: Text(t.analyticsHint),
+                        trailing: Switch(value: _analyticsEnabled, onChanged: (v) => _toggleAnalytics(v)),
+                      ),
+                      const Divider(height: 0),
                       // Language selector inline
                       ListTile(
                         leading: const Icon(Icons.language),
@@ -444,3 +453,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
+
+
+
