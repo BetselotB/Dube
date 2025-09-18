@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 
 class LocalSqlite {
   static Database? _db;
@@ -209,7 +210,7 @@ class LocalSqlite {
     await b2.commit(noResult: true);
   }
 
-  static Future<void> backupToFirestore() async {
+  static Future<String> backupToFirestore() async {
     await init();
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('Not signed in');
@@ -219,7 +220,12 @@ class LocalSqlite {
     final fs = FirebaseFirestore.instance;
     final now = DateTime.now();
     final docRef = fs.collection('users').doc(user.uid).collection('backups').doc(now.millisecondsSinceEpoch.toString());
-    await docRef.set({'exportedAt': Timestamp.fromDate(now), 'payload': dump});
+    await docRef.set({
+      'exportedAt': Timestamp.fromDate(now),
+      'exportedAtHuman': _formatDateTimeHuman(now),
+      'payload': dump,
+    });
+    return _formatDateTimeHuman(now);
   }
 
   static Future<void> restoreFromFirestoreLatestBackup() async {
@@ -240,4 +246,16 @@ class LocalSqlite {
     await temp.writeAsString(jsonEncode(payload), flush: true);
     await importJsonFileToDb(temp.path);
   }
+}
+
+String _formatDateTimeHuman(DateTime dt) {
+  final local = dt.toLocal();
+  final datePart = DateFormat('MMMM d, y').format(local);
+  final timePart = DateFormat('h:mm:ss a').format(local);
+  final offset = local.timeZoneOffset;
+  final sign = offset.isNegative ? '-' : '+';
+  final hours = offset.inHours.abs().toString();
+  final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+  final minutesSuffix = minutes == '00' ? '' : ':$minutes';
+  return '$datePart at $timePart UTC$sign$hours$minutesSuffix';
 }

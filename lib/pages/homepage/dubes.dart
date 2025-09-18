@@ -1,6 +1,7 @@
 // lib/pages/dubes/dubes.dart
 import 'package:flutter/material.dart';
 import '../../src/local_sqlite.dart';
+import 'package:intl/intl.dart';
 
 class DubesPage extends StatefulWidget {
   /// If [personId] is null, show people list mode.
@@ -354,9 +355,7 @@ class _DubesPageState extends State<DubesPage> {
                   separatorBuilder: (_, __) => const Divider(height: 0),
                   itemBuilder: (context, i) {
                     final d = _dubes[i];
-                    final created = DateTime.fromMillisecondsSinceEpoch(
-                      d['createdAt'] as int,
-                    );
+                    final createdMs = d['createdAt'] as int?;
                     return ListTile(
                       title: Text(
                         '${d['itemName'] ?? '—'}  x${d['quantity'] ?? 1}',
@@ -369,7 +368,8 @@ class _DubesPageState extends State<DubesPage> {
                           ),
                           if ((d['note'] ?? '').toString().isNotEmpty)
                             Text(d['note']),
-                          Text('${created.toLocal()}'),
+                          if (createdMs != null)
+                            Text(_formatTimestamp(createdMs)),
                         ],
                       ),
                       trailing: PopupMenuButton<String>(
@@ -389,6 +389,20 @@ class _DubesPageState extends State<DubesPage> {
         ),
       ],
     );
+  }
+
+  String _formatTimestamp(int millis) {
+    final dtLocal = DateTime.fromMillisecondsSinceEpoch(millis).toLocal();
+    final datePart = DateFormat('MMMM d, y').format(dtLocal);
+    final timePart = DateFormat('h:mm:ss a').format(dtLocal);
+    final offset = dtLocal.timeZoneOffset;
+    final sign = offset.isNegative ? '-' : '+';
+    final hours = offset.inHours.abs().toString();
+    final minutesRemainder = offset.inMinutes.abs() % 60;
+    final minutes = minutesRemainder == 0
+        ? ''
+        : ':%02d'.replaceFirst('%02d', minutesRemainder.toString().padLeft(2, '0'));
+    return '$datePart at $timePart UTC$sign$hours$minutes';
   }
 
   String _getInitials(String name) {

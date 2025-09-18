@@ -46,9 +46,9 @@ class _SettingsPageState extends State<SettingsPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('Not signed in');
-      await LocalSqlite.backupToFirestore();
+      final when = await LocalSqlite.backupToFirestore();
       if (!mounted) return;
-      _showSnack(AppLocalizations.of(context)?.backup ?? 'Backup uploaded');
+      _showSnack('${AppLocalizations.of(context)?.backup ?? 'Backup uploaded'} — $when');
     } catch (e) {
       if (!mounted) return;
       _showSnack('Backup failed: $e');
