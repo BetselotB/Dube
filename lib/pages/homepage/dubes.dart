@@ -38,6 +38,12 @@ class _DubesPageState extends State<DubesPage> {
   List<Map<String, dynamic>> _people = [];
   final TextEditingController _peopleSearchCtrl = TextEditingController();
 
+  // Form controllers
+  final _itemNameCtrl = TextEditingController();
+  final _quantityCtrl = TextEditingController(text: '1');
+  final _priceCtrl = TextEditingController();
+  int _quantity = 1;
+
   // No bottom nav here; this page focuses on either people or a person's dubes
 
   @override
@@ -47,6 +53,32 @@ class _DubesPageState extends State<DubesPage> {
       _loadPeople();
     } else {
       _loadDubes();
+    }
+  }
+
+  @override
+  void dispose() {
+    _itemNameCtrl.dispose();
+    _quantityCtrl.dispose();
+    _priceCtrl.dispose();
+    _searchCtrl.dispose();
+    _peopleSearchCtrl.dispose();
+    super.dispose();
+  }
+
+  void _incrementQuantity() {
+    setState(() {
+      _quantity++;
+      _quantityCtrl.text = _quantity.toString();
+    });
+  }
+
+  void _decrementQuantity() {
+    if (_quantity > 1) {
+      setState(() {
+        _quantity--;
+        _quantityCtrl.text = _quantity.toString();
+      });
     }
   }
 
@@ -94,52 +126,16 @@ class _DubesPageState extends State<DubesPage> {
   }
 
   Future<void> _addDube() async {
-    final itemCtrl = TextEditingController();
-    final qtyCtrl = TextEditingController(text: '1');
-    final priceCtrl = TextEditingController();
+    final item = _itemNameCtrl.text.trim();
+    final qty = int.tryParse(_quantityCtrl.text) ?? 1;
+    final price = double.tryParse(_priceCtrl.text) ?? 0.0;
 
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: const Text('Add Dube (item)'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: itemCtrl,
-              decoration: const InputDecoration(labelText: 'Item name'),
-            ),
-            TextField(
-              controller: qtyCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Quantity'),
-            ),
-            TextField(
-              controller: priceCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: const InputDecoration(labelText: 'Price (per item)'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(c).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(c).pop(true),
-            child: const Text('Add'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-
-    final item = itemCtrl.text.trim();
-    final qty = int.tryParse(qtyCtrl.text) ?? 1;
-    final price = double.tryParse(priceCtrl.text) ?? 0.0;
+    if (item.isEmpty || price <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter item name and valid price')),
+      );
+      return;
+    }
 
     await LocalSqlite.insertDube(
       personId: widget.personId!,
@@ -147,7 +143,26 @@ class _DubesPageState extends State<DubesPage> {
       quantity: qty,
       priceAtTaken: price,
     );
+    
+    // Clear the form
+    _itemNameCtrl.clear();
+    _priceCtrl.clear();
+    setState(() {
+      _quantity = 1;
+      _quantityCtrl.text = '1';
+    });
+    
     await _loadDubes();
+    // Scroll to top to show the newly added item
+    if (mounted && _dubes.isNotEmpty) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 300),
+        );
+      }
+    }
   }
 
   Future<void> _editDube(Map<String, dynamic> d) async {
@@ -239,15 +254,86 @@ class _DubesPageState extends State<DubesPage> {
     await _loadDubes();
   }
 
-  // ---------- UI ----------
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    _peopleSearchCtrl.dispose();
-    super.dispose();
+  Future<void> _markAsPaid(String id, double amount) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Mark as Paid'),
+        content: Text('Are you sure you want to mark this item as paid?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+            child: const Text('Mark as Paid'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // Here you would update your database to mark this item as paid
+      // For now, we'll just remove it from the list
+      await LocalSqlite.deleteDube(id);
+      await _loadDubes();
+    }
   }
 
-  Widget _buildPeopleListMode() {
+  Widget _buildDubeItem(Map<String, dynamic> d) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      child: InkWell(
+        onTap: () => _editDube(d).then((_) => _loadDubes()),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      d['itemName'] ?? 'No name',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${d['quantity']} × ${NumberFormat.currency(symbol: 'ETB ').format(d['priceAtTaken'])} = ${NumberFormat.currency(symbol: 'ETB ').format(d['amount'])}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    if (d['note'] != null && d['note'].toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          d['note'],
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                              ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+                onPressed: () => _markAsPaid(d['id'], (d['amount'] as num).toDouble()),
+                tooltip: 'Mark as paid',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------- UI ----------
+  Widget _buildPeopleList() {
     return Column(
       children: [
         Padding(
@@ -333,57 +419,37 @@ class _DubesPageState extends State<DubesPage> {
     );
   }
 
-  Widget _buildManageMode() {
+  Widget _buildDubesList() {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(16.0),
           child: TextField(
             controller: _searchCtrl,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search item or note',
+            decoration: InputDecoration(
+              labelText: 'Search items...',
+              prefixIcon: const Icon(Icons.search),
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _searchCtrl.clear();
+                  _loadDubes();
+                },
+              ),
             ),
             onChanged: (_) => _loadDubes(),
           ),
         ),
+        _buildInputForm(),
         Expanded(
           child: _dubes.isEmpty
               ? const Center(child: Text('No dubes yet'))
-              : ListView.separated(
+              : ListView.builder(
                   itemCount: _dubes.length,
-                  separatorBuilder: (_, __) => const Divider(height: 0),
                   itemBuilder: (context, i) {
                     final d = _dubes[i];
-                    final createdMs = d['createdAt'] as int?;
-                    return ListTile(
-                      title: Text(
-                        '${d['itemName'] ?? '—'}  x${d['quantity'] ?? 1}',
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Price: \$${d['priceAtTaken']}  •  Amount: \$${d['amount']}',
-                          ),
-                          if ((d['note'] ?? '').toString().isNotEmpty)
-                            Text(d['note']),
-                          if (createdMs != null)
-                            Text(_formatTimestamp(createdMs)),
-                        ],
-                      ),
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (v) {
-                          if (v == 'edit') _editDube(d);
-                          if (v == 'delete') _deleteDube(d);
-                        },
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
-                        ],
-                      ),
-                      isThreeLine: true,
-                    );
+                    return _buildDubeItem(d);
                   },
                 ),
         ),
@@ -393,16 +459,7 @@ class _DubesPageState extends State<DubesPage> {
 
   String _formatTimestamp(int millis) {
     final dtLocal = DateTime.fromMillisecondsSinceEpoch(millis).toLocal();
-    final datePart = DateFormat('MMMM d, y').format(dtLocal);
-    final timePart = DateFormat('h:mm:ss a').format(dtLocal);
-    final offset = dtLocal.timeZoneOffset;
-    final sign = offset.isNegative ? '-' : '+';
-    final hours = offset.inHours.abs().toString();
-    final minutesRemainder = offset.inMinutes.abs() % 60;
-    final minutes = minutesRemainder == 0
-        ? ''
-        : ':%02d'.replaceFirst('%02d', minutesRemainder.toString().padLeft(2, '0'));
-    return '$datePart at $timePart UTC$sign$hours$minutes';
+    return DateFormat('MMM d, y • h:mm a').format(dtLocal);
   }
 
   String _getInitials(String name) {
@@ -412,24 +469,107 @@ class _DubesPageState extends State<DubesPage> {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
+  Widget _buildInputForm() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _itemNameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Item name',
+                border: OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _quantityCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Quantity',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      final qty = int.tryParse(value) ?? 1;
+                      if (qty > 0) {
+                        setState(() => _quantity = qty);
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: _incrementQuantity,
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.remove),
+                      onPressed: _decrementQuantity,
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: TextField(
+                    controller: _priceCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Price',
+                      prefixText: 'ETB ',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  icon: const Icon(Icons.add),
+                  onPressed: _addDube,
+                  style: IconButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final body = widget.personId == null
-        ? _buildPeopleListMode()
-        : _buildManageMode();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.personId == null
-              ? 'Dubes — People'
-              : 'Dubes — ${widget.personName ?? 'Person'}',
-        ),
+        title: Text(widget.personName ?? 'Dubes'),
         actions: widget.personId == null
             ? null
-            : [IconButton(onPressed: _addDube, icon: const Icon(Icons.add))],
+            : [
+                IconButton(
+                  onPressed: _addDube,
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Add new dube',
+                ),
+              ],
       ),
-      body: body,
+      body: widget.personId == null ? _buildPeopleList() : _buildDubesList(),
     );
   }
 }
