@@ -379,7 +379,7 @@ class _HomePageState extends State<HomePage> {
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: const Text('👋 Who owes you'),
+        title: const Text('👋 Who owes you 💸'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
