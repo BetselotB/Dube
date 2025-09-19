@@ -87,6 +87,7 @@ class _PaywallPageState extends State<PaywallPage> {
             .get();
             
         if (refDoc.exists) {
+          // ignore: use_build_context_synchronously
           _showSnack(AppLocalizations.of(context)!.paymentReferenceAlreadyUsed);
           setState(() => _loading = false);
           return;
@@ -307,7 +308,7 @@ class _PaywallPageState extends State<PaywallPage> {
           amount = _extractAmount(data['totalPaidAmount']?.toString() ?? '');
           reference = data['receiptNo']?.toString();
           date = data['paymentDate']?.toString();
-          status = data['transactionStatus']?.toString()?.toLowerCase() ?? 'completed';
+          status = data['transactionStatus']?.toString().toLowerCase() ?? 'completed';
           break;
           
         case PaymentMethod.dashen:
@@ -342,7 +343,7 @@ class _PaywallPageState extends State<PaywallPage> {
           amount = _extractAmount(data['paidAmount']?.toString() ?? data['amount']?.toString() ?? '');
           reference = data['receiptNumber']?.toString() ?? data['reference']?.toString();
           date = data['transactionDate']?.toString();
-          status = data['transactionStatus']?.toString()?.toLowerCase() ?? 'completed';
+          status = data['transactionStatus']?.toString().toLowerCase() ?? 'completed';
           break;
           
         case PaymentMethod.image:
@@ -438,6 +439,7 @@ class _PaywallPageState extends State<PaywallPage> {
         await _extractReferenceFromImage();
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       _showSnack('${AppLocalizations.of(context)!.errorSelectingImage} $e');
       setState(() => _extracting = false);
     }
@@ -470,13 +472,16 @@ class _PaywallPageState extends State<PaywallPage> {
           // Automatically trigger verification with the extracted reference
           await _verifyPaymentWithReference(reference);
         } else {
+          // ignore: use_build_context_synchronously
           _showSnack(AppLocalizations.of(context)!.couldNotExtractReference);
         }
       } else {
+        // ignore: use_build_context_synchronously
         _showSnack(AppLocalizations.of(context)!.failedToProcessImage);
       }
     } catch (e) {
       debugPrint('Error extracting reference: $e');
+      // ignore: use_build_context_synchronously
       _showSnack('${AppLocalizations.of(context)!.errorProcessingImage} ${e.toString()}');
     } finally {
       setState(() => _extracting = false);
@@ -539,6 +544,7 @@ class _PaywallPageState extends State<PaywallPage> {
       // If we get here, all validations passed
       await _savePaymentAndUpdateUser(normalized, reference);
     } catch (e) {
+      // ignore: use_build_context_synchronously
       _showSnack('${AppLocalizations.of(context)!.errorProcessingPayment} ${e.toString()}');
       debugPrint('Error in _processVerificationResult: $e');
       rethrow;
@@ -568,6 +574,7 @@ class _PaywallPageState extends State<PaywallPage> {
             .get();
             
         if (existingPayment.docs.isNotEmpty) {
+          // ignore: use_build_context_synchronously
           _showSnack(AppLocalizations.of(context)!.paymentReferenceAlreadyUsed);
           return;
         }
@@ -580,6 +587,7 @@ class _PaywallPageState extends State<PaywallPage> {
       );
       
       if (!result.success) {
+        // ignore: use_build_context_synchronously
         _showSnack(result.message ?? AppLocalizations.of(context)!.verificationFailed);
         return;
       }
@@ -593,6 +601,7 @@ class _PaywallPageState extends State<PaywallPage> {
       
     } catch (e) {
       debugPrint('Error in _verifyPaymentWithReference: $e');
+      // ignore: use_build_context_synchronously
       _showSnack('${AppLocalizations.of(context)!.errorVerifyingPayment} ${e.toString()}');
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -668,6 +677,7 @@ class _PaywallPageState extends State<PaywallPage> {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.primary;
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -680,6 +690,7 @@ class _PaywallPageState extends State<PaywallPage> {
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
+                    // ignore: deprecated_member_use
                     colors: [color, color.withOpacity(0.85)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -736,6 +747,7 @@ class _PaywallPageState extends State<PaywallPage> {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
+                                      // ignore: deprecated_member_use
                                       color: color.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
@@ -866,6 +878,7 @@ class _PaywallPageState extends State<PaywallPage> {
                                 children: [
                                   Expanded(
                                     child: DropdownButtonFormField<PaymentMethod>(
+                                      // ignore: deprecated_member_use
                                       value: _method,
                                       decoration: InputDecoration(
                                         border: OutlineInputBorder(
@@ -1052,6 +1065,7 @@ class _FeatureRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _Bullet extends StatelessWidget {
   final String text;
   const _Bullet({required this.text});

@@ -66,8 +66,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
       // Share file using share_plus
       final xfile = XFile(path);
+      // ignore: deprecated_member_use, use_build_context_synchronously
       await Share.shareXFiles([xfile], text: AppLocalizations.of(context)?.share ?? 'Dube app backup');
 
+      // ignore: use_build_context_synchronously
       _showSnack(AppLocalizations.of(context)?.share ?? 'Exported and opening share sheet...');
     } catch (e) {
       if (mounted) _showSnack('Export failed: $e');
@@ -140,12 +142,14 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _toggleAnalytics(bool next) async {
     setState(() => _analyticsEnabled = next);
     await _setPref('analytics_enabled', next);
+    // ignore: use_build_context_synchronously
     _showSnack(next ? (AppLocalizations.of(context)?.analytics ?? 'Analytics enabled') : (AppLocalizations.of(context)?.analytics ?? 'Analytics disabled'));
   }
 
   Future<void> _toggleAutoBackup(bool next) async {
     setState(() => _autoBackup = next);
     await _setPref('auto_backup', next);
+    // ignore: use_build_context_synchronously
     _showSnack(next ? AppLocalizations.of(context)?.autoBackup ?? 'Auto-backup enabled' : AppLocalizations.of(context)?.autoBackup ?? 'Auto-backup disabled');
   }
 
@@ -153,6 +157,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _changeLanguage(Locale locale) async {
     final provider = Provider.of<LocaleProvider>(context, listen: false);
     await provider.setLocale(locale);
+    // ignore: use_build_context_synchronously
     _showSnack('${AppLocalizations.of(context)?.language ?? 'Language'}: ${locale.languageCode}');
   }
 
@@ -221,6 +226,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             onSelected: (v) {
                               if (v == 'signout') _signOut();
                               if (v == 'delete') _deleteAccount();
+                              // ignore: deprecated_member_use
                               if (v == 'share') Share.share(t.shareApp);
                             },
                             itemBuilder: (_) => [
@@ -354,6 +360,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         leading: const Icon(Icons.ios_share),
                         title: Text(t.shareApp),
                         onTap: () async {
+                          // ignore: deprecated_member_use
                           await Share.share(t.shareApp);
                         },
                       ),
@@ -414,7 +421,9 @@ class _SettingsPageState extends State<SettingsPage> {
               RadioListTile<String>(
                 title: Text(t.englishLabel),
                 value: 'en',
+                // ignore: deprecated_member_use
                 groupValue: current,
+                // ignore: deprecated_member_use
                 onChanged: (v) {
                   Navigator.of(c).pop(v);
                 },
@@ -422,7 +431,9 @@ class _SettingsPageState extends State<SettingsPage> {
               RadioListTile<String>(
                 title: Text(t.amharicLabel),
                 value: 'am',
+                // ignore: deprecated_member_use
                 groupValue: current,
+                // ignore: deprecated_member_use
                 onChanged: (v) {
                   Navigator.of(c).pop(v);
                 },

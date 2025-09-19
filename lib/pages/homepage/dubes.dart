@@ -296,6 +296,7 @@ class _DubesPageState extends State<DubesPage> {
                           d['note'],
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 fontStyle: FontStyle.italic,
+                                // ignore: deprecated_member_use
                                 color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
                               ),
                         ),

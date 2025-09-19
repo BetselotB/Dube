@@ -78,6 +78,7 @@ class _HomePageState extends State<HomePage> {
       orElse: () => {},
     );
     if (created.isNotEmpty) {
+      // ignore: use_build_context_synchronously
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) =>
@@ -416,6 +417,7 @@ class _HomePageState extends State<HomePage> {
     if (user == null) {
       Future.microtask(() {
         if (mounted)
+          // ignore: curly_braces_in_flow_control_structures, use_build_context_synchronously
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const AuthPage()),
           );

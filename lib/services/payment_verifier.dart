@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+// ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 import 'package:dube/config.dart';
 
@@ -145,6 +146,7 @@ class PaymentVerifierService {
 
   String _endpointFor(PaymentMethod method) {
     // All endpoints now use the same base path
+    // ignore: prefer_interpolation_to_compose_strings
     return '/verify' + (method == PaymentMethod.image ? '-image' : '-${method.name}');
   }
 }

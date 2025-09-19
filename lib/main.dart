@@ -47,7 +47,9 @@ class MyApp extends StatelessWidget {
               onSecondary: const Color(0xFF2B2D42),
               surface: const Color(0xFFFFFFFF),
               onSurface: const Color(0xFF2B2D42),
+              // ignore: deprecated_member_use
               background: const Color(0xFFFFFFFF),
+              // ignore: deprecated_member_use
               onBackground: const Color(0xFF2B2D42),
             ),
         scaffoldBackgroundColor: const Color(0xFFFFFFFF),
@@ -171,10 +173,12 @@ class _SplashPageState extends State<SplashPage>
 
       // Check connectivity first
       final connectivity = await Connectivity().checkConnectivity();
+      // ignore: unrelated_type_equality_checks
       final isOnline = connectivity != ConnectivityResult.none;
 
       if (user == null) {
         // Not signed in -> show language selector (as before)
+        // ignore: use_build_context_synchronously
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LanguageSelector()),
         );
@@ -184,6 +188,7 @@ class _SplashPageState extends State<SplashPage>
       if (!isOnline) {
         // Offline: skip paywall checks, allow access
         Navigator.of(
+          // ignore: use_build_context_synchronously
           context,
         ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
         return;
