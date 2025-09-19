@@ -1,6 +1,7 @@
 // lib/pages/dubes/dubes.dart
 import 'package:dube/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../src/local_sqlite.dart';
 import 'package:intl/intl.dart';
 
@@ -33,33 +34,54 @@ class DubesPage extends StatefulWidget {
 
 class _DubesPageState extends State<DubesPage> {
   // Dubes for a specific person
+  // ignore: prefer_final_fields
   List<Map<String, dynamic>> _dubes = [];
   final TextEditingController _searchCtrl = TextEditingController();
+  Timer? _dubesSearchDebounce;
+  final ScrollController _dubesScrollCtrl = ScrollController();
+  static const int _pageSize = 30;
+  bool _isLoadingMoreDubes = false;
+  bool _hasMoreDubes = true;
+  int _dubesOffset = 0;
 
   // People list mode
+  // ignore: prefer_final_fields
   List<Map<String, dynamic>> _people = [];
   final TextEditingController _peopleSearchCtrl = TextEditingController();
+  Timer? _peopleSearchDebounce;
+  final ScrollController _peopleScrollCtrl = ScrollController();
+  bool _isLoadingMorePeople = false;
+  bool _hasMorePeople = true;
+  int _peopleOffset = 0;
 
   // Form controllers
   final _itemNameCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController(text: '1');
   final _priceCtrl = TextEditingController();
   int _quantity = 1;
+  late final NumberFormat _etbFormat;
 
   // No bottom nav here; this page focuses on either people or a person's dubes
 
   @override
   void initState() {
     super.initState();
+    _etbFormat = NumberFormat.currency(symbol: 'ETB ');
     if (widget.personId == null) {
-      _loadPeople();
+      _loadPeople(reset: true);
+      _peopleScrollCtrl.addListener(_onPeopleScroll);
     } else {
-      _loadDubes();
+      _loadDubes(reset: true);
+      _dubesScrollCtrl.addListener(_onDubesScroll);
     }
   }
 
   @override
   void dispose() {
+    _dubesSearchDebounce?.cancel();
+    _peopleSearchDebounce?.cancel();
+    _dubesScrollCtrl.dispose();
+    _peopleScrollCtrl.dispose();
     _itemNameCtrl.dispose();
     _quantityCtrl.dispose();
     _priceCtrl.dispose();
@@ -85,10 +107,38 @@ class _DubesPageState extends State<DubesPage> {
   }
 
   // ---------- People ----------
-  Future<void> _loadPeople() async {
-    final rows = await LocalSqlite.getAllPeople(search: _peopleSearchCtrl.text);
+  Future<void> _loadPeople({bool reset = false}) async {
+    if (_isLoadingMorePeople) return;
+    if (reset) {
+      _people.clear();
+      _peopleOffset = 0;
+      _hasMorePeople = true;
+    }
+    if (!_hasMorePeople) return;
+    _isLoadingMorePeople = true;
+    final rows = await LocalSqlite.getAllPeople(
+      search: _peopleSearchCtrl.text,
+      limit: _pageSize,
+      offset: _peopleOffset,
+    );
     if (!mounted) return;
-    setState(() => _people = rows);
+    setState(() {
+      _people.addAll(rows);
+      _peopleOffset += rows.length;
+      _hasMorePeople = rows.length == _pageSize;
+      _isLoadingMorePeople = false;
+    });
+  }
+
+  void _onPeopleScroll() {
+    if (_peopleScrollCtrl.position.pixels >= _peopleScrollCtrl.position.maxScrollExtent - 200) {
+      _loadPeople();
+    }
+  }
+
+  void _schedulePeopleSearch() {
+    _peopleSearchDebounce?.cancel();
+    _peopleSearchDebounce = Timer(const Duration(milliseconds: 300), () => _loadPeople(reset: true));
   }
 
   Future<void> _deletePerson(String id) async {
@@ -113,18 +163,44 @@ class _DubesPageState extends State<DubesPage> {
     );
     if (ok != true) return;
     await LocalSqlite.deletePerson(id);
-    await _loadPeople();
+    await _loadPeople(reset: false);
   }
 
   // ---------- Dubes ----------
-  Future<void> _loadDubes() async {
+  Future<void> _loadDubes({bool reset = false}) async {
     if (widget.personId == null) return;
+    if (_isLoadingMoreDubes) return;
+    if (reset) {
+      _dubes.clear();
+      _dubesOffset = 0;
+      _hasMoreDubes = true;
+    }
+    if (!_hasMoreDubes) return;
+    _isLoadingMoreDubes = true;
     final rows = await LocalSqlite.getDubesForPerson(
       widget.personId!,
       search: _searchCtrl.text,
+      limit: _pageSize,
+      offset: _dubesOffset,
     );
     if (!mounted) return;
-    setState(() => _dubes = rows);
+    setState(() {
+      _dubes.addAll(rows);
+      _dubesOffset += rows.length;
+      _hasMoreDubes = rows.length == _pageSize;
+      _isLoadingMoreDubes = false;
+    });
+  }
+
+  void _onDubesScroll() {
+    if (_dubesScrollCtrl.position.pixels >= _dubesScrollCtrl.position.maxScrollExtent - 200) {
+      _loadDubes();
+    }
+  }
+
+  void _scheduleDubesSearch() {
+    _dubesSearchDebounce?.cancel();
+    _dubesSearchDebounce = Timer(const Duration(milliseconds: 300), () => _loadDubes(reset: true));
   }
 
   Future<void> _addDube() async {
@@ -155,7 +231,7 @@ class _DubesPageState extends State<DubesPage> {
       _quantityCtrl.text = '1';
     });
     
-    await _loadDubes();
+    await _loadDubes(reset: true);
     // Scroll to top to show the newly added item
     if (mounted && _dubes.isNotEmpty) {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -232,7 +308,7 @@ class _DubesPageState extends State<DubesPage> {
       priceAtTaken: price,
       note: noteCtrl.text.trim(),
     );
-    await _loadDubes();
+    await _loadDubes(reset: false);
   }
 
   // delete dube handled by markAsPaid for now
@@ -263,7 +339,7 @@ class _DubesPageState extends State<DubesPage> {
       // Here you would update your database to mark this item as paid
       // For now, we'll just remove it from the list
       await LocalSqlite.deleteDube(id);
-      await _loadDubes();
+      await _loadDubes(reset: true);
     }
   }
 
@@ -271,7 +347,7 @@ class _DubesPageState extends State<DubesPage> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: InkWell(
-        onTap: () => _editDube(d).then((_) => _loadDubes()),
+        onTap: () => _editDube(d),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
@@ -286,7 +362,7 @@ class _DubesPageState extends State<DubesPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${d['quantity']} × ${NumberFormat.currency(symbol: 'ETB ').format(d['priceAtTaken'])} = ${NumberFormat.currency(symbol: 'ETB ').format(d['amount'])}',
+                      '${d['quantity']} × ${_etbFormat.format(d['priceAtTaken'])} = ${_etbFormat.format(d['amount'])}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     if (d['note'] != null && d['note'].toString().isNotEmpty)
@@ -329,7 +405,7 @@ class _DubesPageState extends State<DubesPage> {
               prefixIcon: const Icon(Icons.search),
               hintText: AppLocalizations.of(context)!.searchPeople,
             ),
-            onChanged: (_) => _loadPeople(),
+            onChanged: (_) => _schedulePeopleSearch(),
           ),
         ),
         Expanded(
@@ -359,8 +435,9 @@ class _DubesPageState extends State<DubesPage> {
                   ),
                 )
               : RefreshIndicator(
-                  onRefresh: _loadPeople,
+                  onRefresh: () => _loadPeople(reset: true),
                   child: ListView.separated(
+                    controller: _peopleScrollCtrl,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 8,
@@ -371,6 +448,7 @@ class _DubesPageState extends State<DubesPage> {
                       final p = _people[i];
                       final name = p['name'] ?? '—';
                       return ListTile(
+                        key: ValueKey<String>(p['id'] as String),
                         leading: CircleAvatar(child: Text(_getInitials(name))),
                         title: Text(name),
                         subtitle: Text('\$${(p['total'] ?? 0).toString()}'),
@@ -382,7 +460,7 @@ class _DubesPageState extends State<DubesPage> {
                                   personName: name,
                                 ),
                               )
-                              .then((_) => _loadPeople());
+                              .then((_) => _loadPeople(reset: true));
                         },
                         trailing: PopupMenuButton<String>(
                           onSelected: (v) {
@@ -419,11 +497,11 @@ class _DubesPageState extends State<DubesPage> {
                 icon: const Icon(Icons.clear),
                 onPressed: () {
                   _searchCtrl.clear();
-                  _loadDubes();
+                  _loadDubes(reset: true);
                 },
               ),
             ),
-            onChanged: (_) => _loadDubes(),
+            onChanged: (_) => _scheduleDubesSearch(),
           ),
         ),
         if (!widget.readOnly) _buildInputForm(),
@@ -431,10 +509,14 @@ class _DubesPageState extends State<DubesPage> {
           child: _dubes.isEmpty
               ? Center(child: Text(AppLocalizations.of(context)!.noDubesYet))
               : ListView.builder(
+                  controller: _dubesScrollCtrl,
                   itemCount: _dubes.length,
                   itemBuilder: (context, i) {
                     final d = _dubes[i];
-                    return _buildDubeItem(d);
+                    return KeyedSubtree(
+                      key: ValueKey<String>(d['id'] as String),
+                      child: _buildDubeItem(d),
+                    );
                   },
                 ),
         ),

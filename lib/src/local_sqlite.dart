@@ -8,6 +8,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
+// Memoized date/time formatters
+final DateFormat _dateFmt = DateFormat('MMMM d, y');
+final DateFormat _timeFmt = DateFormat('h:mm:ss a');
+
 class LocalSqlite {
   static Database? _db;
   static final _uuid = Uuid();
@@ -63,12 +67,15 @@ class LocalSqlite {
   }
 
   // People CRUD
-  static Future<List<Map<String, dynamic>>> getAllPeople({String search = ''}) async {
+  static Future<List<Map<String, dynamic>>> getAllPeople({String search = '', int? limit, int? offset}) async {
     await init();
     final uid = _uid();
     final where = "deleted = 0 AND userId = ?${search.isNotEmpty ? " AND name LIKE ?" : ""}";
     final args = search.isNotEmpty ? [uid, '%$search%'] : [uid];
-    final rows = await _db!.rawQuery('SELECT * FROM people WHERE $where ORDER BY createdAt ASC', args);
+    final buffer = StringBuffer('SELECT * FROM people WHERE $where ORDER BY createdAt ASC');
+    if (limit != null) buffer.write(' LIMIT $limit');
+    if (offset != null) buffer.write(' OFFSET $offset');
+    final rows = await _db!.rawQuery(buffer.toString(), args);
     return rows;
   }
 
@@ -96,12 +103,19 @@ class LocalSqlite {
   }
 
   // Dubes CRUD
-  static Future<List<Map<String, dynamic>>> getDubesForPerson(String personId, {String search = ''}) async {
+  static Future<List<Map<String, dynamic>>> getDubesForPerson(String personId, {String search = '', int? limit, int? offset}) async {
     await init();
     final uid = _uid();
     final where = 'personId = ? AND userId = ?${search.isNotEmpty ? ' AND (itemName LIKE ? OR note LIKE ?)' : ''}';
     final args = search.isNotEmpty ? [personId, uid, '%$search%', '%$search%'] : [personId, uid];
-    final rows = await _db!.query('dubes', where: where, whereArgs: args, orderBy: 'createdAt DESC');
+    final rows = await _db!.query(
+      'dubes',
+      where: where,
+      whereArgs: args,
+      orderBy: 'createdAt DESC',
+      limit: limit,
+      offset: offset,
+    );
     return rows;
   }
 
@@ -258,8 +272,8 @@ class LocalSqlite {
 
 String _formatDateTimeHuman(DateTime dt) {
   final local = dt.toLocal();
-  final datePart = DateFormat('MMMM d, y').format(local);
-  final timePart = DateFormat('h:mm:ss a').format(local);
+  final datePart = _dateFmt.format(local);
+  final timePart = _timeFmt.format(local);
   final offset = local.timeZoneOffset;
   final sign = offset.isNegative ? '-' : '+';
   final hours = offset.inHours.abs().toString();
