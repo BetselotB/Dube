@@ -946,6 +946,15 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Need help? Contact support@example.com'**
   String get needHelpContactSupport;
+
+  /// Additional localizations for profile/help/FAQ
+  String get helpContactDetail;
+  String get emailSupport;
+  String get supportEmail;
+  String get faqHeader;
+  String get faqAddPerson;
+  String get faqViewDubes;
+  String get faqEditDeleteDube;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

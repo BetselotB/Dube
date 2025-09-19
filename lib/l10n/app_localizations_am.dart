@@ -434,5 +434,26 @@ class AppLocalizationsAm extends AppLocalizations {
   String get extractedReference => 'የተወሰደ ማጣቀሻ';
 
   @override
-  String get needHelpContactSupport => 'እርዳታ ይፈልጋሉ? support@example.com ላይ ያግኙን';
+  String get needHelpContactSupport => 'እገዛ እፈልጋለሁ? እባክዎት support@example.com ያናግሩ።';
+
+  @override
+  String get helpContactDetail => 'ማንኛውንም ጥያቄ፣ ችግር፣ ወይም አስተያየት ካለዎት፣ ከታች የቀረበውን የእውቂያ መረጃ በመጠቀም ያናግሩን።';
+
+  @override
+  String get emailSupport => 'ኢሜይል';
+
+  @override
+  String get supportEmail => 'support@dubeapp.example';
+
+  @override
+  String get faqHeader => 'የተደጋጋሚ ጥያቄዎች';
+
+  @override
+  String get faqAddPerson => '• ሰው እንዴት እንደሚጨምር? በመነሻ ገጽ ያለውን መያዣ ቦታ ይጠቀሙ።';
+
+  @override
+  String get faqViewDubes => '• ዱቤዎችን እንዴት እንደሚመለከቱ? ሰውን ይጫኑ።';
+
+  @override
+  String get faqEditDeleteDube => '• ዱቤን እንዴት እንደሚያስተካክሉ/ይሰርዙ? በእያንዳንዱ እቃ ላይ ያለውን ምናሌ ይጠቀሙ።';
 }

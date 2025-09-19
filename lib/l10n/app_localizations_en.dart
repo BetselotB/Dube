@@ -435,4 +435,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get needHelpContactSupport => 'Need help? Contact support@example.com';
+
+  @override
+  String get helpContactDetail => 'If you have any questions, issues, or feedback, please reach out to us using the contact information below.';
+  @override
+  String get emailSupport => 'Email';
+  @override
+  String get supportEmail => 'support@dubeapp.example';
+  @override
+  String get faqHeader => 'FAQ';
+  @override
+  String get faqAddPerson => '• How do I add a person? Use the Home screen add field.';
+  @override
+  String get faqViewDubes => '• How do I view dubes? Tap a person to open their dubes.';
+  @override
+  String get faqEditDeleteDube => '• How do I edit/delete a dube? Use the menu on each item.';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,10 +12,10 @@ class ProfilePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(AppLocalizations.of(context)!.profile),
       ),
       body: user == null
-          ? const Center(child: Text('Not signed in'))
+          ? Center(child: Text(AppLocalizations.of(context)!.notSignedIn))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -38,7 +39,7 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.person_outline),
-                        title: const Text('Name'),
+                        title: Text(AppLocalizations.of(context)!.name),
                         subtitle: Text(user.displayName ?? '—'),
                       ),
                       const Divider(height: 0),
@@ -50,7 +51,7 @@ class ProfilePage extends StatelessWidget {
                       const Divider(height: 0),
                       ListTile(
                         leading: const Icon(Icons.verified_user_outlined),
-                        title: const Text('UID'),
+                        title: const Text('UID'), // No localization for UID, keep as is
                         subtitle: Text(user.uid),
                       ),
                     ],
@@ -61,7 +62,7 @@ class ProfilePage extends StatelessWidget {
                   child: ListTile(
                     leading: const Icon(Icons.help_outline),
                     title: const Text('Help & FAQ'),
-                    subtitle: const Text('Contact info and common questions'),
+                    subtitle: Text(AppLocalizations.of(context)!.aboutHint),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const HelpFaqPage()),
@@ -82,25 +83,25 @@ class HelpFaqPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Help & FAQ'),
+        title: Text(AppLocalizations.of(context)!.helpFaq),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Need help?',
+            AppLocalizations.of(context)!.needHelpContactSupport,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'If you have any questions, issues, or feedback, please reach out to us using the contact information below.',
+            AppLocalizations.of(context)!.helpContactDetail,
           ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(
               leading: const Icon(Icons.phone_outlined),
-              title: const Text('Phone'),
-              subtitle: const Text('+1 (555) 123-4567'),
+              title: Text(AppLocalizations.of(context)!.phoneNumber),
+              subtitle: const Text('+1 (555) 123-4567'), // Keep as is, or localize if needed
               onTap: () async {
                 final uri = Uri(scheme: 'tel', path: '+15551234567');
                 if (await canLaunchUrl(uri)) {
@@ -113,8 +114,8 @@ class HelpFaqPage extends StatelessWidget {
           Card(
             child: ListTile(
               leading: const Icon(Icons.email_outlined),
-              title: const Text('Email'),
-              subtitle: const Text('support@dubeapp.example'),
+              title: Text(AppLocalizations.of(context)!.emailSupport),
+              subtitle: Text(AppLocalizations.of(context)!.supportEmail), // Keep as is, or localize if needed
               onTap: () async {
                 final uri = Uri(
                   scheme: 'mailto',
@@ -128,16 +129,16 @@ class HelpFaqPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'FAQ',
+          Text(
+            AppLocalizations.of(context)!.faqHeader,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text('• How do I add a person? Use the Home screen add field.'),
+          Text(AppLocalizations.of(context)!.faqAddPerson),
           const SizedBox(height: 6),
-          const Text('• How do I view dubes? Tap a person to open their dubes.'),
+          Text(AppLocalizations.of(context)!.faqViewDubes),
           const SizedBox(height: 6),
-          const Text('• How do I edit/delete a dube? Use the menu on each item.'),
+          Text(AppLocalizations.of(context)!.faqEditDeleteDube),
         ],
       ),
     );
