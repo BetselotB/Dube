@@ -600,11 +600,11 @@ class _DubesPageState extends State<DubesPage> {
             
             const SizedBox(height: 12),
             
-            // Quantity and price row
+            // Price and quantity row
             Padding(
               padding: const EdgeInsets.only(bottom: 4.0, left: 4.0),
               child: Text(
-                AppLocalizations.of(context)!.quantity,
+                AppLocalizations.of(context)!.price,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).hintColor,
                 ),
@@ -612,6 +612,33 @@ class _DubesPageState extends State<DubesPage> {
             ),
             Row(
               children: [
+                // Price field
+                Expanded(
+                  child: TextField(
+                    controller: _priceCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.price,
+                      prefixText: 'ETB ',
+                      border: const OutlineInputBorder(),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      isDense: true,
+                      suffixIcon: _priceCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () => setState(() => _priceCtrl.clear()),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            )
+                          : null,
+                    ),
+                    style: const TextStyle(fontSize: 14),
+                    onSubmitted: (_) => _addDube(),
+                  ),
+                ),
+                
+                const SizedBox(width: 12),
+                
                 // Quantity controls
                 Container(
                   decoration: BoxDecoration(
@@ -640,10 +667,12 @@ class _DubesPageState extends State<DubesPage> {
                           controller: _quantityCtrl,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.zero,
                             isDense: true,
+                            label: Text(AppLocalizations.of(context)!.quantity),
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
                           ),
                           style: const TextStyle(fontSize: 14),
                           onChanged: (value) {
@@ -667,33 +696,6 @@ class _DubesPageState extends State<DubesPage> {
                         ),
                       ),
                     ],
-                  ),
-                ),
-                
-                const SizedBox(width: 12),
-                
-                // Price field
-                Expanded(
-                  child: TextField(
-                    controller: _priceCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.price,
-                      prefixText: 'ETB ',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      isDense: true,
-                      suffixIcon: _priceCtrl.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
-                              onPressed: () => setState(() => _priceCtrl.clear()),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            )
-                          : null,
-                    ),
-                    style: const TextStyle(fontSize: 14),
-                    onSubmitted: (_) => _addDube(),
                   ),
                 ),
                 
@@ -734,52 +736,54 @@ class _DubesPageState extends State<DubesPage> {
               )
             : null,
         actions: widget.personId == null
-            ? null
-            : [
-                IconButton(
-                  onPressed: _addDube,
-                  icon: const Icon(Icons.add),
-                  tooltip: AppLocalizations.of(context)!.addNewDube,
-                ),
-                PopupMenuButton<String>(
-                  onSelected: (value) async {
-                    if (value == 'mark_completed') {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (c) => AlertDialog(
-                          title: const Text('Mark as Completed?'),
-                          content: const Text('This will move this person to the completed section. Continue?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(c).pop(false),
-                              child: Text(AppLocalizations.of(context)!.cancel),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.of(c).pop(true),
-                              child: const Text('Mark as Completed'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true && mounted) {
-                        Navigator.of(context).pop(true);
-                      }
-                    } else if (value == 'mark_all_paid') {
-                      await _markAllAsPaid();
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'mark_completed',
-                      child: Text('Mark as Completed'),
+    ? null
+    : [
+        IconButton(
+          onPressed: _addDube,
+          icon: const Icon(Icons.add),
+          tooltip: AppLocalizations.of(context)!.addNewDube,
+        ),
+        PopupMenuButton<String>(
+          onSelected: (value) async {
+            if (value == 'mark_completed') {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (c) => AlertDialog(
+                  title: const Text('Mark as Completed?'),
+                  content: const Text('This will move this person to the completed section. Continue?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(c).pop(false),
+                      child: Text(AppLocalizations.of(context)!.cancel),
                     ),
-                    const PopupMenuItem(
-                      value: 'mark_all_paid',
-                      child: Text('Mark All Dubes as Paid'),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(c).pop(true),
+                      child: const Text('Mark as Completed'),
                     ),
                   ],
                 ),
-              ],
+              );
+              if (confirmed == true && mounted) {
+                Navigator.of(context).pop(true);
+              }
+            } else if (value == 'mark_all_paid') {
+              await _markAllAsPaid();
+            }
+          },
+          itemBuilder: (context) => [
+            // NO localization here — plain text with Amharic + English
+            PopupMenuItem(
+              value: 'mark_completed',
+              child: Text('ጨርሷል/Completed'),
+            ),
+            PopupMenuItem(
+              value: 'mark_all_paid',
+              child: Text('ዱቤ ሁሉ ተከፍሉኣል , mark all dubes as paid'),
+            ),
+          ],
+        ),
+      ],
+
       ),
       body: widget.personId == null ? _buildPeopleList() : _buildDubesList(),
     );

@@ -334,6 +334,45 @@ class LocalSqlite {
     return _formatDateTimeHuman(now);
   }
 
+  static Future<Map<String, dynamic>> getStatistics() async {
+    await init();
+    final db = _db;
+    if (db == null) throw Exception('Database not initialized');
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception('User not logged in');
+
+    // Get total dubes count and amount
+    final dubesResult = await db.rawQuery('''
+      SELECT 
+        COUNT(*) as totalDubes,
+        COALESCE(SUM(amount), 0) as totalAmount,
+        SUM(CASE WHEN paid = 1 THEN 1 ELSE 0 END) as paidDubes,
+        SUM(CASE WHEN paid = 0 THEN 1 ELSE 0 END) as unpaidDubes,
+        COALESCE(SUM(CASE WHEN paid = 1 THEN amount ELSE 0 END), 0) as paidAmount,
+        COALESCE(SUM(CASE WHEN paid = 0 THEN amount ELSE 0 END), 0) as unpaidAmount
+      FROM dubes 
+      WHERE userId = ?
+    ''', [userId]);
+
+    // Get people count
+    final peopleResult = await db.rawQuery('''
+      SELECT COUNT(*) as peopleCount
+      FROM people 
+      WHERE userId = ? AND deleted = 0
+    ''', [userId]);
+
+    return {
+      'totalDubes': dubesResult.first['totalDubes'] as int? ?? 0,
+      'totalAmount': (dubesResult.first['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      'paidDubes': dubesResult.first['paidDubes'] as int? ?? 0,
+      'unpaidDubes': dubesResult.first['unpaidDubes'] as int? ?? 0,
+      'paidAmount': (dubesResult.first['paidAmount'] as num?)?.toDouble() ?? 0.0,
+      'unpaidAmount': (dubesResult.first['unpaidAmount'] as num?)?.toDouble() ?? 0.0,
+      'peopleCount': peopleResult.first['peopleCount'] as int? ?? 0,
+    };
+  }
+
   static Future<void> restoreFromFirestoreLatestBackup() async {
     await init();
     final user = FirebaseAuth.instance.currentUser;

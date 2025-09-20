@@ -494,8 +494,14 @@ abstract class AppLocalizations {
   /// No description provided for @whoOwesYou.
   ///
   /// In en, this message translates to:
-  /// **'👋 Who owes you 💸'**
+  /// **'Who Owes You'**
   String get whoOwesYou;
+
+  /// No description provided for @welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome 💸'**
+  String get welcome;
 
   /// No description provided for @goToDubes.
   ///
@@ -508,6 +514,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go to Home'**
   String get goToHome;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'home'**
+  String get home;
 
   /// No description provided for @logout.
   ///
@@ -569,6 +581,36 @@ abstract class AppLocalizations {
   /// **'Mark as Paid'**
   String get markAsPaid;
 
+  /// No description provided for @confirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Action'**
+  String get confirmAction;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @confirmMarkAllPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to mark all dubes as paid? This action cannot be undone.'**
+  String get confirmMarkAllPaid;
+
+  /// No description provided for @allDubesMarkedPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'All dubes have been marked as paid'**
+  String get allDubesMarkedPaid;
+
+  /// No description provided for @errorMarkingPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Error marking dubes as paid'**
+  String get errorMarkingPaid;
+
   /// No description provided for @areYouSureMarkAsPaid.
   ///
   /// In en, this message translates to:
@@ -596,7 +638,7 @@ abstract class AppLocalizations {
   /// No description provided for @price.
   ///
   /// In en, this message translates to:
-  /// **'Price'**
+  /// **'single price'**
   String get price;
 
   /// No description provided for @add.
@@ -964,6 +1006,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Frequently Asked Questions'**
   String get faqHeader;
+  String get faqAddPersonQ;
+  String get faqAddPersonA;
+  String get faqViewDubesQ;
+  String get faqViewDubesA;
+  String get faqMarkPaidQ;
+  String get faqMarkPaidA;
+  String get faqRecoverPersonQ;
+  String get faqRecoverPersonA;
+  String get faqSearchQ;
+  String get faqSearchA;
+  String get faqOfflineQ;
+  String get faqOfflineA;
+  String get faqLanguageQ;
+  String get faqLanguageA;
+  String get faqExportQ;
+  String get faqExportA;
+  String get faqPremiumQ;
+  String get faqPremiumA;
+  String get faqBackupQ;
+  String get faqBackupA;
+  String get faqNotificationsQ;
+  String get faqNotificationsA;
+  String get faqSupportQ;
+  String get faqSupportA;
+  String get faqSecurityQ;
+  String get faqSecurityA;
+  String get faqPaywallQ;
+  String get faqPaywallA;
+  String get faqShareQ;
+  String get faqShareA;
 
   /// No description provided for @faqAddPerson.
   ///
@@ -982,6 +1054,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'• Long press on a dube to edit or delete it.'**
   String get faqEditDeleteDube;
+
+  /// No description provided for @actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get actions;
+
+  /// No description provided for @markCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Completed'**
+  String get markCompleted;
+
+  /// No description provided for @markAllPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark All Dubes as Paid'**
+  String get markAllPaid;
 
   /// No description provided for @personExistsTitle.
   ///

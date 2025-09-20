@@ -6,13 +6,73 @@ import 'app_localizations.dart';
 
 /// The translations for Amharic (`am`).
 class AppLocalizationsAm extends AppLocalizations {
+  @override
+  String get faqAddPersonQ => 'ሰው እንዴት እንደሚጨምሩ?';
+  @override
+  String get faqAddPersonA => 'ዋና ገፅ ላይ ያለው የሰው መጨመሪያ መስክ ወይም "+" ቁልፍ ይጠቀሙ።';
+  @override
+  String get faqViewDubesQ => 'የሰው Dubes እንዴት እንደሚመለከቱ?';
+  @override
+  String get faqViewDubesA => 'ዋና ገፅ ላይ ሰውን በመጫን ሁሉንም Dubes ይመልከቱ።';
+  @override
+  String get faqMarkPaidQ => 'Dubes እንዴት የተከፈሉ ወይም የተጨረሱ መሆናቸውን እንዴት እንደሚያመለከቱ?';
+  @override
+  String get faqMarkPaidA => 'ከእያንዳንዱ ሰው በአጠገቡ ያሉትን check እና done-all ቁልፎች ይጠቀሙ።';
+  @override
+  String get faqRecoverPersonQ => 'የተሰረዙ ሰዎችን መመለስ ይቻላል?';
+  @override
+  String get faqRecoverPersonA => 'አዲስ ስም በመጨመር ቀድሞ የተሰረዙ ሰዎችን መመለስ የሚችሉ ማስጠንቀቂያ ይታያል።';
+  @override
+  String get faqSearchQ => 'ሰዎችን እንዴት እንደሚፈልጉ?';
+  @override
+  String get faqSearchA => 'ዋና ገፅ ላይ ያለውን መፈለጊያ መስክ በመጠቀም ሰዎችን በስም ፈጣን ያግኙ።';
+  @override
+  String get faqOfflineQ => 'መተግበሪያውን ኦፍላይን መጠቀም ይቻላል?';
+  @override
+  String get faqOfflineA => 'አዎን፣ መተግበሪያው ሙሉ በሙሉ ኦፍላይን ይሰራል። መረጃዎ በመንታዎ ላይ ይቆያል።';
+  @override
+  String get faqLanguageQ => 'የመተግበሪያውን ቋንቋ እንዴት እንደሚቀይሩ?';
+  @override
+  String get faqLanguageA => 'በሴቲንግስ ውስጥ ቋንቋ በመጫን የሚመከሩትን ቋንቋ ይምረጡ።';
+  @override
+  String get faqExportQ => 'መረጃዬን እንዴት እንደማስወጣ ወይም እንዴት እንደማስቀመጥ?';
+  @override
+  String get faqExportA => 'በሴቲንግስ ውስጥ Backup ወይም Export አማራጮችን በመጠቀም መረጃዎን ያስቀመጡ ወይም ያጋሩ።';
+  @override
+  String get faqPremiumQ => 'Premium ምንድነው?';
+  @override
+  String get faqPremiumA => 'Premium የማይገደቡ ሰዎችና Dubes, backup & restore እና ተጨማሪ ባለቤት ባለቤት ይከፍታል።';
+  @override
+  String get faqBackupQ => 'መረጃዬን እንዴት እንደማስቀመጥ እና እንዴት እንደማመለስ?';
+  @override
+  String get faqBackupA => 'በሴቲንግስ ውስጥ Backup to Cloud እና Restore from Cloud አማራጮችን ይጠቀሙ።';
+  @override
+  String get faqNotificationsQ => 'መተግበሪያው ማሳወቂያዎች አሏቸው?';
+  @override
+  String get faqNotificationsA => 'በአሁኑ ጊዜ ማሳወቂያዎች አይደሉም። በቅርቡ ይጨመራሉ!';
+  @override
+  String get faqSupportQ => 'ድጋፍ እንዴት እንደሚጠይቁ?';
+  @override
+  String get faqSupportA => 'በHelp & FAQ ገፅ ላይ ያሉትን Email, Telegram, ወይም Facebook ያጠቀሙ።';
+  @override
+  String get faqSecurityQ => 'መረጃዬ ደህና ነው?';
+  @override
+  String get faqSecurityA => 'መረጃዎ በመንታዎ ላይ ይቆያል፤ backup ካላቀረቡ ብቻ። ግላዊነትዎን እናከብራለን።';
+  @override
+  String get faqPaywallQ => 'ለምን የክፍያ ገጽ አሳየኝ?';
+  @override
+  String get faqPaywallA => 'ከነፃ ጊዜዎ በኋላ የክፍያ ገጽ ይታያል። Premium በመግዛት ሙሉ ተግባራት ይቀጥሉ።';
+  @override
+  String get faqShareQ => 'መተግበሪያውን እንዴት እንደማጋራት?';
+  @override
+  String get faqShareA => 'በSettings ውስጥ Share App አማራጭ በመጠቀም ጓደኞችዎን ይጋብዙ።';
   AppLocalizationsAm([String locale = 'am']) : super(locale);
 
   @override
   String get appTitle => 'ዱቤ';
 
   @override
-  String get cancel => 'ይቅር';
+  String get cancel => 'ተው';
 
   @override
   String get appName => 'ዱቤ';
@@ -114,7 +174,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get exportHint => 'የአፕ ዳታዎን ወደ ፋይል ለማውጣት';
 
   @override
-  String get share => 'አጋራ';
+  String get share => 'Share';
 
   @override
   String get restoreFromCloud => 'ከክላውድ ዳታዎን መመለስ';
@@ -200,7 +260,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get paid => 'የከፈሉ';
 
   @override
-  String get searchPeople => 'ዱቤ ወሳጅ ስም ያስገቡ';
+  String get searchPeople => 'ዱቤ ወሳጅ በስም ይፈልጉ';
 
   @override
   String get noPeopleYet => 'እስካሁን ምንም ሰዎች የሉም';
@@ -212,10 +272,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get whoOwesYou => 'ዱቤ';
 
   @override
+  String get welcome => 'እንኳን ደህና መጡ';
+
+  @override
   String get goToDubes => 'ወደ ዱቤ ዝርዝር';
 
   @override
   String get goToHome => 'ወደ ቤት ሂድ';
+
+  @override
+  String get home => 'ወደ ቤት ሂድ';
 
   @override
   String get logout => 'ከአካውንት ውጣ';
@@ -248,6 +314,21 @@ class AppLocalizationsAm extends AppLocalizations {
   String get markAsPaid => 'ወደተከፈለ ዱቤ ቀይር';
 
   @override
+  String get confirmAction => 'ድርጊቱን ያረጋግጡ';
+
+  @override
+  String get confirm => 'አረጋግጥ';
+
+  @override
+  String get confirmMarkAllPaid => 'ሁሉንም ዱቤዎች እንደተከፈሉ ምልክት ማድረግ ይፈልጋሉ? ይህ እርምጃ ሊመለስ አይችልም።';
+
+  @override
+  String get allDubesMarkedPaid => 'ሁሉም ዱቤዎች እንደተከፈሉ ምልክት ተደርጎባቸዋል';
+
+  @override
+  String get errorMarkingPaid => 'ዱቤዎችን እንደተከፈሉ ምልክት ማድረግ አልተቻለም';
+
+  @override
   String get areYouSureMarkAsPaid => 'ይህ እቃ እንደተከፈለ ምልክት ለማድረግ እርግጠኛ ነዎት?';
 
   @override
@@ -260,10 +341,10 @@ class AppLocalizationsAm extends AppLocalizations {
   String get noDubesYet => 'እስካሁን ምንም ዱቤ የለም';
 
   @override
-  String get price => 'ዋጋ';
+  String get price => 'የኣንድ አቃ ዋጋ';
 
   @override
-  String get add => 'ጨምር';
+  String get add => 'መዝግብ';
 
   @override
   String get dubes => 'ዱቤዎች';
@@ -453,6 +534,15 @@ class AppLocalizationsAm extends AppLocalizations {
 
   @override
   String get faqEditDeleteDube => '• ዱቤን ለመስተካከል ወይም ለማስወገድ ረዘም ላለ ጊዜ ይጫኑ።';
+
+  @override
+  String get actions => 'ተግባሮች';
+
+  @override
+  String get markCompleted => 'ጨርሰዋል';
+
+  @override
+  String get markAllPaid => 'ዱቤ ሁሉ ተከፍለዋል';
 
   @override
   String get personExistsTitle => 'ሰው አለ፣ እንደገና ለመጨመር ትፈልጋለህ?';

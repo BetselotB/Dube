@@ -24,6 +24,9 @@ class PersonLocal {
   final String name;
   final num total;
   final int? createdAt;
+  final GlobalKey<RefreshIndicatorState> _homeRefreshKey = GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _dubesRefreshKey = GlobalKey<RefreshIndicatorState>();
+
   PersonLocal({required this.id, required this.name, required this.total, this.createdAt});
 
   factory PersonLocal.fromRow(Map<String, dynamic> r) =>
@@ -42,7 +45,7 @@ class PersonLocal {
   );
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with RouteAware {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TextEditingController _nameCtrl = TextEditingController();
   List<PersonLocal> _people = [];
@@ -50,8 +53,21 @@ class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController(initialPage: 0);
   int _currentPageIndex = 0;
   bool _showDeleted = false;
+  
+  // Statistics
+  Map<String, dynamic> _stats = {
+    'totalDubes': 0,
+    'totalAmount': 0.0,
+    'paidDubes': 0,
+    'unpaidDubes': 0,
+    'paidAmount': 0.0,
+    'unpaidAmount': 0.0,
+    'peopleCount': 0,
+  };
 
   FirebaseAuth get _auth => FirebaseAuth.instance;
+
+  RouteObserver<PageRoute> get routeObserver => RouteObserver<PageRoute>();
 
   @override
   void initState() {
@@ -59,10 +75,59 @@ class _HomePageState extends State<HomePage> {
     _loadPeople();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    _nameCtrl.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when coming back to this page
+    _loadPeople();
+  }
+  Future<void> _handleRefresh() async {
+  // reload people and statistics
+  await _loadPeople();
+  await _loadStatistics();
+  // small delay so the UX feels responsive even if DB is fast
+  await Future.delayed(Duration(milliseconds: 200));
+}
+
+
+  Future<void> _loadStatistics() async {
+    try {
+      final stats = await LocalSqlite.getStatistics();
+      if (mounted) {
+        setState(() {
+          _stats = stats;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading statistics: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _loadPeople() async {
     final rows = await LocalSqlite.getPeople(search: _search, deleted: _showDeleted);
     if (!mounted) return;
-    setState(() => _people = rows.map((r) => PersonLocal.fromRow(r)).toList());
+    setState(() {
+      _people = rows.map((r) => PersonLocal.fromRow(r)).toList();
+      _stats['peopleCount'] = _people.length;
+    });
+    await _loadStatistics();
   }
 
   Future<void> _addPerson() async {
@@ -195,7 +260,7 @@ class _HomePageState extends State<HomePage> {
     final ok = await showDialog<bool?>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text('Mark as Completed?'),
+        title: Text('ጨርሰዋል/Mark as Completed?'),
         content: Text('This will move this person to the completed section. Continue?'),
         actions: [
           TextButton(
@@ -204,7 +269,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: Text('Mark as Completed'),
+            child: Text('ጨርሰዋል/Mark as Completed'),
           ),
         ],
       ),
@@ -215,6 +280,26 @@ class _HomePageState extends State<HomePage> {
   }
   
   Future<void> _markAllDubesAsPaid(String personId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.confirmAction),
+        content: Text(AppLocalizations.of(context)!.confirmMarkAllPaid),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     try {
       // Get all unpaid dubes for this person
       final dubes = await LocalSqlite.getDubesForPerson(personId, showPaid: false);
@@ -226,13 +311,13 @@ class _HomePageState extends State<HomePage> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All dubes marked as paid')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.allDubesMarkedPaid)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error marking dubes as paid: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.errorMarkingPaid}: $e')),
         );
       }
     }
@@ -247,7 +332,7 @@ class _HomePageState extends State<HomePage> {
               UserAccountsDrawerHeader(
                 accountName: Text(user.displayName ?? 'User'),
                 accountEmail: Text(user.email ?? ''),
-                currentAccountPicture: const CircleAvatar(
+                currentAccountPicture: CircleAvatar(
                   radius: 28,
                   backgroundColor: Color(0xFF2B2D42),
                   child: Text(
@@ -257,50 +342,50 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.settings),
+                leading: Icon(Icons.settings),
                 title: Text(AppLocalizations.of(context)!.settings),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    MaterialPageRoute(builder: (_) => SettingsPage()),
                   );
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.person_outline),
+                leading: Icon(Icons.person_outline),
                 title: Text(AppLocalizations.of(context)!.profile),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ProfilePage()),
+                    MaterialPageRoute(builder: (_) => ProfilePage()),
                   );
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.help_outline),
+                leading: Icon(Icons.help_outline),
                 title: Text(AppLocalizations.of(context)!.helpFaq),
                 onTap: () {
                   Navigator.of(context).pop();
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HelpFaqPage()),
+                    MaterialPageRoute(builder: (_) => HelpFaqPage()),
                   );
                 },
               ),
-              const Divider(),
+              Divider(),
               ListTile(
-                leading: const Icon(Icons.logout),
+                leading: Icon(Icons.logout),
                 title: Text(AppLocalizations.of(context)!.logout),
                 onTap: _logout,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   AppLocalizations.of(context)!.appVersion('1.0.0'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
             ],
           ),
         ),
@@ -313,26 +398,30 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     Navigator.of(
       context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
-  }Future<void> _shareApp() async {
-  const url = 'https://www.youtube.com/';
-  final text = 'Check out this app! $url';
-
-  try {
-    // Share basic text + url
-    await Share.share(text, subject: 'My App');
-    // optional: show a confirmation
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Share sheet opened')),
-    );
-  } catch (e) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to share: $e')),
+    ).pushReplacement(
+      MaterialPageRoute(builder: (_) => AuthPage()),
     );
   }
-}
+
+  Future<void> _shareApp() async {
+    const url = 'https://www.youtube.com/';
+    final text = 'Check out this app! $url';
+
+    try {
+      // Share basic text + url
+      await Share.share(text, subject: 'My App');
+      // optional: show a confirmation
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Share sheet opened')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to share: $e')),
+      );
+    }
+  }
 
   // removed obsolete bottom sheet switcher (replaced by PageView + FAB)
 
@@ -352,8 +441,32 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHomeTab(BuildContext context) {
     return Column(
       children: [
+        // Statistics Card
+        _buildStatistics(),
+        
+        // Search bar
         Padding(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(12.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.searchPeople,
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Theme.of(context).cardColor,
+              contentPadding: EdgeInsets.symmetric(vertical: 0),
+            ),
+            onChanged: (v) {
+              setState(() => _search = v);
+              _loadPeople();
+            },
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(12),
           child: Row(
             children: [
               Expanded(
@@ -366,23 +479,24 @@ class _HomePageState extends State<HomePage> {
                   onSubmitted: (_) => _addPerson(),
                 ),
               ),
-              const SizedBox(width: 8),
-              ElevatedButton(
+              SizedBox(width: 8),
+              ElevatedButton.icon(
                 onPressed: _showDeleted ? null : _addPerson,
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(14),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
-                child: const Icon(Icons.add),
+                icon: Icon(Icons.add, size: 20),
+                label: Text(AppLocalizations.of(context)!.add),
               ),
             ],
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: EdgeInsets.symmetric(horizontal: 12.0),
           child: SegmentedButton<int>(
             segments: [
-              ButtonSegment(value: 0, icon: const Icon(Icons.people_outline), label: Text(AppLocalizations.of(context)!.active)),
-              ButtonSegment(value: 1, icon: const Icon(Icons.delete_outline), label: Text(AppLocalizations.of(context)!.paid)),
+              ButtonSegment(value: 0, icon: Icon(Icons.people_outline), label: Text(AppLocalizations.of(context)!.active)),
+              ButtonSegment(value: 1, icon: Icon(Icons.delete_outline), label: Text(AppLocalizations.of(context)!.paid)),
             ],
             selected: {_showDeleted ? 1 : 0},
             onSelectionChanged: (s) async {
@@ -395,7 +509,7 @@ class _HomePageState extends State<HomePage> {
         ),
         SizedBox(height: 6),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: EdgeInsets.symmetric(horizontal: 12.0),
           child: TextField(
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
@@ -407,67 +521,21 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Expanded(
           child: _people.isEmpty
-              ? Center(child: Text(AppLocalizations.of(context)!.noPeopleYet))
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  itemCount: _people.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) {
-                    final p = _people[i];
-                    final initials = _getInitials(p.name);
-                    return Card(
-                      child: ListTile(
-                        leading: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            CircleAvatar(child: Text(initials)),
-                            if (p.createdAt != null)
-                              Positioned(
-                                right: -2,
-                                bottom: -2,
-                                child: AgingFlag(
-                                  createdAtMillis: p.createdAt!,
-                                  size: 12,
-                                ),
-                              ),
-                          ],
+              ? Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.noPeopleYet,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).hintColor,
                         ),
-                        title: Text(p.name),
-                        subtitle: Text('\$${p.total.toString()}'),
-                        onTap: () => _gotoDubes(p.name, p.id, readOnly: _showDeleted),
-                        trailing: _showDeleted
-                            ? null
-                            : PopupMenuButton<String>(
-                                onSelected: (v) async {
-                                  if (v == 'mark_completed') {
-                                    // Mark person as completed (moves to paid section)
-                                    await _deletePerson(p.id);
-                                  } else if (v == 'mark_all_paid') {
-                                    // Mark all person's dubes as paid but keep in active list
-                                    await _markAllDubesAsPaid(p.id);
-                                    await _loadPeople();
-                                  }
-                                },
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                    value: 'mark_completed',
-                                    child: Text('Mark as Completed'),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'mark_all_paid',
-                                    child: Text('Mark All Dubes as Paid'),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    );
-                  },
+                  ),
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  itemCount: _people.length,
+                  itemBuilder: (context, i) => _buildPersonItem(context, _people[i]),
                 ),
         ),
       ],
@@ -478,11 +546,11 @@ class _HomePageState extends State<HomePage> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           child: SegmentedButton<int>(
             segments: [
-              ButtonSegment(value: 0, icon: const Icon(Icons.people_outline), label: Text(AppLocalizations.of(context)!.active)),
-              ButtonSegment(value: 1, icon: const Icon(Icons.delete_outline), label: Text(AppLocalizations.of(context)!.paid)),
+              ButtonSegment(value: 0, icon: Icon(Icons.people_outline), label: Text(AppLocalizations.of(context)!.active)),
+              ButtonSegment(value: 1, icon: Icon(Icons.delete_outline), label: Text(AppLocalizations.of(context)!.paid)),
             ],
             selected: {_showDeleted ? 1 : 0},
             onSelectionChanged: (s) async {
@@ -494,7 +562,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+          padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
           child: TextField(
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.search),
@@ -510,56 +578,71 @@ class _HomePageState extends State<HomePage> {
           child: _people.isEmpty
               ? Center(child: Text(AppLocalizations.of(context)!.noPeopleYet))
               : ListView.separated(
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
                   ),
                   itemCount: _people.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  separatorBuilder: (_, __) => SizedBox(height: 8),
                   itemBuilder: (context, i) {
                     final p = _people[i];
                     final initials = _getInitials(p.name);
                     return Card(
                       child: ListTile(
-                        leading: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            CircleAvatar(child: Text(initials)),
-                            if (p.createdAt != null)
-                              Positioned(
-                                right: -2,
-                                bottom: -2,
-                                child: AgingFlag(
-                                  createdAtMillis: p.createdAt!,
-                                  size: 12,
-                                ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        leading: ConstrainedBox(
+                          constraints: BoxConstraints(minWidth: 40, maxWidth: 40),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              CircleAvatar(
+                                child: Text(initials, style: TextStyle(fontSize: 12)),
+                                radius: 16,
                               ),
-                          ],
+                              if (p.createdAt != null)
+                                Positioned(
+                                  right: -2,
+                                  bottom: -2,
+                                  child: AgingFlag(
+                                    createdAtMillis: p.createdAt!,
+                                    size: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                        title: Text(p.name),
-                        subtitle: Text('\$${p.total.toString()}'),
+                        title: Text(
+                          p.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          '\$${p.total.toString()}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                         onTap: () => _gotoDubes(p.name, p.id, readOnly: _showDeleted),
                         trailing: _showDeleted
                             ? null
-                            : PopupMenuButton<String>(
-                                onSelected: (v) async {
-                                  if (v == 'mark_completed') {
-                                    // Mark person as completed (moves to paid section)
-                                    await _deletePerson(p.id);
-                                  } else if (v == 'mark_all_paid') {
-                                    // Mark all person's dubes as paid but keep in active list
-                                    await _markAllDubesAsPaid(p.id);
-                                    await _loadPeople();
-                                  }
-                                },
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                    value: 'mark_completed',
-                                    child: Text('Mark as Completed'),
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Complete Button
+                                  _buildActionButton(
+                                    icon: Icons.check_circle,
+                                    color: Colors.green,
+                                    tooltip: AppLocalizations.of(context)!.markCompleted,
+                                    onTap: () => _deletePerson(p.id),
                                   ),
-                                  PopupMenuItem(
-                                    value: 'mark_all_paid',
-                                    child: Text('Mark All Dubes as Paid'),
+                                  SizedBox(width: 8),
+                                  // Mark All Paid Button
+                                  _buildActionButton(
+                                    icon: Icons.done_all,
+                                    color: Colors.blue,
+                                    tooltip: AppLocalizations.of(context)!.markAllPaid,
+                                    onTap: () async {
+                                      await _markAllDubesAsPaid(p.id);
+                                      await _loadPeople();
+                                    },
                                   ),
                                 ],
                               ),
@@ -579,44 +662,325 @@ class _HomePageState extends State<HomePage> {
     return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
   }
 
+  // Person List Item Widget
+  Widget _buildPersonItem(BuildContext context, PersonLocal person) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: InkWell(
+        onTap: () => _gotoDubes(person.name, person.id, readOnly: _showDeleted),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              // Avatar with AgingFlag
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.blueGrey[800] : Colors.blueGrey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _getInitials(person.name),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (person.createdAt != null)
+                    Positioned(
+                      right: -2,
+                      bottom: -2,
+                      child: AgingFlag(
+                        createdAtMillis: person.createdAt!,
+                        size: 12,
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(width: 12),
+              // Name and Amount
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      person.name,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      '\$${person.total.toString()}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Action Buttons
+              if (!_showDeleted) ..._buildActionButtons(person),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build action buttons
+  List<Widget> _buildActionButtons(PersonLocal person) {
+    return [
+      // Complete Button
+      _buildActionButton(
+        icon: Icons.check_circle,
+        color: Colors.green,
+        tooltip: AppLocalizations.of(context)!.markCompleted,
+        onTap: () => _deletePerson(person.id),
+      ),
+      SizedBox(width: 8),
+      // Mark All Paid Button
+      _buildActionButton(
+        icon: Icons.done_all,
+        color: Colors.blue,
+        tooltip: AppLocalizations.of(context)!.markAllPaid,
+        onTap: () async {
+          await _markAllDubesAsPaid(person.id);
+          await _loadPeople();
+        },
+      ),
+    ];
+  }
+
+  // Action Button Widget
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Tooltip(
+          message: tooltip,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: onTap,
+              child: Container(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 20, color: color),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 2),
+        Text(
+          tooltip,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, {Color? color}) {
+    return Card(
+      elevation: 1,
+      margin: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 2),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey,
+                height: 1.1,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatistics() {
+    return Card(
+      margin: EdgeInsets.fromLTRB(12, 12, 12, 6),
+      child: Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Statistics',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Dubes',
+                    _stats['totalDubes'].toString(),
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatCard(
+                    'People',
+                    _stats['peopleCount'].toString(),
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Amount',
+                    '\$${_stats['totalAmount'].toStringAsFixed(2)}',
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Paid',
+                    '\$${_stats['paidAmount'].toStringAsFixed(0)}',
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatCard(
+                    '${_stats['paidDubes']} dubes',
+                    '${_stats['totalDubes'] > 0 ? ((_stats['paidDubes'] / _stats['totalDubes']) * 100).toStringAsFixed(0) : 0}%',
+                    color: Colors.green,
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatCard(
+                    'Unpaid',
+                    '\$${_stats['unpaidAmount'].toStringAsFixed(0)}',
+                    color: Colors.orange,
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatCard(
+                    '${_stats['unpaidDubes']} dubes',
+                    '${_stats['totalDubes'] > 0 ? ((_stats['unpaidDubes'] / _stats['totalDubes']) * 100).toStringAsFixed(0) : 0}%',
+                    color: Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _auth.currentUser;
     if (user == null) {
       Future.microtask(() {
-        if (mounted)
+        if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const AuthPage()),
+            MaterialPageRoute(builder: (_) => AuthPage()),
           );
+        }
       });
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.menu),
+          icon: Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: Text(AppLocalizations.of(context)!.whoOwesYou),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${AppLocalizations.of(context)!.welcome}${user.displayName != null ? ',' : ''}',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            if (user.displayName != null)
+              Text(
+                user.displayName!,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            else
+              Text(AppLocalizations.of(context)!.whoOwesYou),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: Icon(Icons.share),
             tooltip: AppLocalizations.of(context)!.logout,
             onPressed: _shareApp,
           ),
         ],
       ),
       drawer: _buildDrawer(user),
-      body: PageView(
-        controller: _pageController,
-        physics: const BouncingScrollPhysics(),
-        onPageChanged: (i) => setState(() => _currentPageIndex = i),
-        children: [
-          _buildHomeTab(context),
-          _buildDubesTab(context),
-        ],
+      body: SafeArea(
+        child: PageView(
+          controller: _pageController,
+          physics: BouncingScrollPhysics(),
+          onPageChanged: (i) => setState(() => _currentPageIndex = i),
+          children: [
+            _buildHomeTab(context),
+            _buildDubesTab(context),
+          ],
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton.extended(
@@ -648,10 +1012,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    _pageController.dispose();
-    super.dispose();
   }
-}

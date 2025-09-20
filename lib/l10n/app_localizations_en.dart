@@ -6,6 +6,66 @@ import 'app_localizations.dart';
 
 /// The translations for English (`en`).
 class AppLocalizationsEn extends AppLocalizations {
+  @override
+  String get faqAddPersonQ => 'How do I add a person?';
+  @override
+  String get faqAddPersonA => 'Go to the Home tab and use the Add Person field or "+" button.';
+  @override
+  String get faqViewDubesQ => 'How do I view Dubes for a person?';
+  @override
+  String get faqViewDubesA => 'Tap on a person in the Home tab to see all their Dubes (debts/transactions).';
+  @override
+  String get faqMarkPaidQ => 'How do I mark Dubes as paid or completed?';
+  @override
+  String get faqMarkPaidA => 'Use the check and done-all buttons next to each person to mark Dubes as paid or completed.';
+  @override
+  String get faqRecoverPersonQ => 'Can I recover a deleted person?';
+  @override
+  String get faqRecoverPersonA => 'Yes, if you try to add a person with the same name as a deleted one, you will be prompted to revive them.';
+  @override
+  String get faqSearchQ => 'How do I search for people?';
+  @override
+  String get faqSearchA => 'Use the search bar at the top of the Home tab to quickly find people by name.';
+  @override
+  String get faqOfflineQ => 'Can I use the app offline?';
+  @override
+  String get faqOfflineA => 'Yes, the app works fully offline. All data is stored locally on your device.';
+  @override
+  String get faqLanguageQ => 'How do I change the app language?';
+  @override
+  String get faqLanguageA => 'Go to Settings and tap Language to select your preferred language.';
+  @override
+  String get faqExportQ => 'How do I export or backup my data?';
+  @override
+  String get faqExportA => 'Use the Backup or Export options in Settings to save or share your data.';
+  @override
+  String get faqPremiumQ => 'What is Premium?';
+  @override
+  String get faqPremiumA => 'Premium unlocks unlimited people and Dubes, backup & restore, and more features.';
+  @override
+  String get faqBackupQ => 'How do I backup and restore my data?';
+  @override
+  String get faqBackupA => 'Go to Settings and use the Backup to Cloud and Restore from Cloud options.';
+  @override
+  String get faqNotificationsQ => 'Does the app have notifications?';
+  @override
+  String get faqNotificationsA => 'Currently, notifications are not supported. Stay tuned for updates!';
+  @override
+  String get faqSupportQ => 'How do I contact support?';
+  @override
+  String get faqSupportA => 'Use the Email, Telegram, or Facebook links in the Help & FAQ page.';
+  @override
+  String get faqSecurityQ => 'Is my data secure?';
+  @override
+  String get faqSecurityA => 'Your data stays on your device unless you upload a backup. We value your privacy.';
+  @override
+  String get faqPaywallQ => 'Why do I see a paywall?';
+  @override
+  String get faqPaywallA => 'The paywall appears after your free access ends. Upgrade to Premium to continue using all features.';
+  @override
+  String get faqShareQ => 'How do I share the app?';
+  @override
+  String get faqShareA => 'Use the Share App option in Settings to invite friends to Dube.';
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
@@ -209,13 +269,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchPeopleToViewDubes => 'Search people to view dubes';
 
   @override
-  String get whoOwesYou => '👋 Who owes you 💸';
+  String get whoOwesYou => 'Who Owes You';
+
+  @override
+  String get welcome => 'Welcome 💸';
 
   @override
   String get goToDubes => 'Go to Dubes';
 
   @override
   String get goToHome => 'Go to Home';
+
+  @override
+  String get home => 'home';
 
   @override
   String get logout => 'Logout';
@@ -248,6 +314,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get markAsPaid => 'Mark as Paid';
 
   @override
+  String get confirmAction => 'Confirm Action';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get confirmMarkAllPaid => 'Are you sure you want to mark all dubes as paid? This action cannot be undone.';
+
+  @override
+  String get allDubesMarkedPaid => 'All dubes have been marked as paid';
+
+  @override
+  String get errorMarkingPaid => 'Error marking dubes as paid';
+
+  @override
   String get areYouSureMarkAsPaid => 'Are you sure you want to mark this item as paid?';
 
   @override
@@ -260,7 +341,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDubesYet => 'No dubes yet';
 
   @override
-  String get price => 'Price';
+  String get price => 'single price';
 
   @override
   String get add => 'Add';
@@ -453,6 +534,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get faqEditDeleteDube => '• Long press on a dube to edit or delete it.';
+
+  @override
+  String get actions => 'Actions';
+
+  @override
+  String get markCompleted => 'Mark as Completed';
+
+  @override
+  String get markAllPaid => 'Mark All Dubes as Paid';
 
   @override
   String get personExistsTitle => 'Person Exists';
