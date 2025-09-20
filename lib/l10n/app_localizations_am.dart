@@ -33,16 +33,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get password => 'የይለፍ ቃል';
 
   @override
-  String get confirmPassword => 'የይለፍ ቃልን ያረጋግጡ';
+  String get confirmPassword => 'የይለፍ ቃልን ይድገሙ';
 
   @override
   String get name => 'ሙሉ ስም';
 
   @override
-  String get fillAllFields => 'እባክዎ ሁሉንም መስኮች ይሙሉ።';
+  String get fillAllFields => 'እባክዎ ሁሉንም ቦክሶች ይሙሉ።';
 
   @override
-  String get passwordsDontMatch => 'የይለፍ ቃሎች አይከተሉም።';
+  String get passwordsDontMatch => 'የይለፍ ቃሎች ኣይመሳሰሉም።';
 
   @override
   String get loginSuccessful => 'በተሳካ ሁኔታ ገቡ።';
@@ -54,19 +54,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get or => 'ወይም';
 
   @override
-  String get continueWithGoogle => 'ከGoogle ቀጥለው';
+  String get continueWithGoogle => 'በ ጉግል አካውንት ይቀጥሉ።';
 
   @override
-  String get googleSignInPlaceholder => 'Google ግንኙነት አልተፈጠረም';
+  String get googleSignInPlaceholder => 'ጉግል ግንኙነት አልተፈጠረም።';
 
   @override
-  String get googleSignInCancelled => 'የGoogle ግባ ተሰርዟል።';
+  String get googleSignInCancelled => 'የ ጉግል መግቢያ ተሰርዟል።';
 
   @override
-  String get googleSignInSuccess => 'በGoogle ተገናኝተዋል።';
+  String get googleSignInSuccess => 'በ ጉግል አካውንት ገብተዋል።';
 
   @override
-  String get termsHint => 'በመቀጠል የመመሪያችንን እና ፕራይቬሲን ታረጋግጣሉ።';
+  String get termsHint => 'በመቀጠል የመመሪያችንን እና ፕራይቬሲን ተስማምተዋል።';
 
   @override
   String get selectLanguage => 'ቋንቋ ይምረጡ';
@@ -78,10 +78,10 @@ class AppLocalizationsAm extends AppLocalizations {
   String get changeLaterHint => 'ይህን በኋላ በሴቲንግ መቀየር ይችላሉ።';
 
   @override
-  String get englishLabel => 'እንግሊዝኛ';
+  String get englishLabel => 'English';
 
   @override
-  String get englishSubLabel => 'በእንግሊዝኛ መጠቀም';
+  String get englishSubLabel => 'Use english';
 
   @override
   String get amharicLabel => 'አማርኛ';
@@ -105,19 +105,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get backupHint => 'ክላውድ ላይ ቅርጸ መዝገብ እንዲያደርጉ ያስችላል';
 
   @override
-  String get backup => 'ዳታ ማስቀመጥ';
+  String get backup => 'ዳታ እንዳይጠፋ ማስቀመጥ';
 
   @override
-  String get exportBackup => 'መዝገብ ላይ ላክ (ፋይል አካትት)';
+  String get exportBackup => 'ዳታዎን ኤክስፖርት ያድርጉ';
 
   @override
-  String get exportHint => 'የአፕ ዳታዎን ወደ ፋይል እና እንዲካተት ይፈጥሩ';
+  String get exportHint => 'የአፕ ዳታዎን ወደ ፋይል ለማውጣት';
 
   @override
   String get share => 'አጋራ';
 
   @override
-  String get restoreFromCloud => 'ከክላውድ መመለስ';
+  String get restoreFromCloud => 'ከክላውድ ዳታዎን መመለስ';
 
   @override
   String get restoreHint => 'ከክላውድ የቅርጸ መዝገብ መመለስ (ይህ ከአካባቢው ዳታ ይሰርዛል)';
@@ -126,19 +126,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get restore => 'እንደገና ያመለሱ';
 
   @override
-  String get signOut => 'ውጣ';
+  String get signOut => 'ከ አካውንት ውጣ';
 
   @override
-  String get deleteAccount => 'መለያ ሰርዝ';
+  String get deleteAccount => 'መአካውንት ሰርዝ';
 
   @override
   String get analytics => 'ትንታኔ';
 
   @override
-  String get analyticsHint => 'የአፕ የአጠቃቀም ዳታን ለማሻሻል በርካታ ይረዳል';
+  String get analyticsHint => 'የአፕ የአጠቃቀም ዳታን ለማሻሻል ይረዳል';
 
   @override
-  String get autoBackup => 'ራስ-ስር ቅርጸ መዝገብ';
+  String get autoBackup => 'አውቶማቲካሊ ዳታ ባካፕ ለማብራት';
 
   @override
   String get language => 'ቋንቋ';
@@ -156,7 +156,7 @@ class AppLocalizationsAm extends AppLocalizations {
   String get aboutText => 'ዱቤ ማን እንደሚከፍል መከታተያ ነው።';
 
   @override
-  String get shareApp => 'መተግበሪያን እኩል አድርግ';
+  String get shareApp => 'መተግበሪያውን ሼር አድርግ';
 
   @override
   String get guest => 'እንግዳ';
@@ -191,16 +191,16 @@ class AppLocalizationsAm extends AppLocalizations {
   }
 
   @override
-  String get addPersonName => 'የሰው ስም ጨምር';
+  String get addPersonName => 'አዲስ ዱቤ ወሳጅ ስም ያስገቡ';
 
   @override
-  String get active => 'በሥራ ላይ';
+  String get active => 'ያልከፈሉ';
 
   @override
-  String get paid => 'የተከፈለ';
+  String get paid => 'የከፈሉ';
 
   @override
-  String get searchPeople => 'ሰዎችን ፈልግ';
+  String get searchPeople => 'ዱቤ ወሳጅ ስም ያስገቡ';
 
   @override
   String get noPeopleYet => 'እስካሁን ምንም ሰዎች የሉም';
@@ -209,16 +209,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get searchPeopleToViewDubes => 'ዱቤዎችን ለማየት ሰዎችን ይፈልጉ';
 
   @override
-  String get whoOwesYou => '👋 ማን ነው ያለብህ 💸';
+  String get whoOwesYou => 'ዱቤ';
 
   @override
-  String get goToDubes => 'ወደ ዱቤዎች ሂድ';
+  String get goToDubes => 'ወደ ዱቤ ዝርዝር';
 
   @override
   String get goToHome => 'ወደ ቤት ሂድ';
 
   @override
-  String get logout => 'ውጣ';
+  String get logout => 'ከአካውንት ውጣ';
 
   @override
   String get settings => 'ቅንብሮች';
@@ -230,10 +230,10 @@ class AppLocalizationsAm extends AppLocalizations {
   String get editDube => 'ዱቤ አስተካክል';
 
   @override
-  String get itemName => 'የእቃ ስም';
+  String get itemName => 'የእቃ ስም ያስገቡ';
 
   @override
-  String get quantity => 'ብዛት';
+  String get quantity => 'የእቃ ብዛት ያስገቡ';
 
   @override
   String get pricePerItem => 'ዋጋ (በአንድ እቃ)';
@@ -242,16 +242,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get noteOptional => 'ማስታወሻ (አማራጭ)';
 
   @override
-  String get save => 'አስቀምጥ';
+  String get save => 'ዱቤ መዝግብ';
 
   @override
-  String get markAsPaid => 'እንደተከፈለ ምልክት አድርግ';
+  String get markAsPaid => 'ወደተከፈለ ዱቤ ቀይር';
 
   @override
-  String get areYouSureMarkAsPaid => 'ይህ እቃ እንደተከፈለ ምልክት ማድረግዎ እርግጠኛ ነዎት?';
+  String get areYouSureMarkAsPaid => 'ይህ እቃ እንደተከፈለ ምልክት ለማድረግ እርግጠኛ ነዎት?';
 
   @override
-  String get addPeopleFromHome => 'ከዋናው ገጽ ላይ ሰዎችን ያክሉ ወይም እዚያ ያለውን የመደመር ቁልፍ ይጠቀሙ።';
+  String get addPeopleFromHome => 'ከዋናው ገጽ ላይ ሰዎችን ያስገቡ ወይም እዚያ ያለውን የመደመር ምልክት ይጠቀሙ።';
 
   @override
   String get searchItems => 'እቃዎችን ፈልግ...';
@@ -263,46 +263,46 @@ class AppLocalizationsAm extends AppLocalizations {
   String get price => 'ዋጋ';
 
   @override
-  String get add => 'አክል';
+  String get add => 'ጨምር';
 
   @override
   String get dubes => 'ዱቤዎች';
 
   @override
-  String get addNewDube => 'አዲስ ዱቤ አክል';
+  String get addNewDube => 'አዲስ ዱቤ መዝግብ';
 
   @override
-  String get enterReferenceNumber => 'እባክዎ የማጣቀሻ/ደረሰኝ ቁጥር ያስገቡ';
+  String get enterReferenceNumber => 'እባክዎ የደረሰኝ ቁጥር ያስገቡ';
 
   @override
   String get noUserSignedIn => 'የገባ ተጠቃሚ የለም';
 
   @override
-  String get paymentReferenceAlreadyUsed => 'ይህ የክፍያ ማጣቀሻ አስቀድሞ ጥቅም ላይ የዋለ ይመስላል';
+  String get paymentReferenceAlreadyUsed => 'ይህ የደረሰኝ ቁጥር ከዚህ በፊት የተጠቀሙት ነው ፣ እባክዎን ትክክለኛውን ያስገቡ';
 
   @override
-  String get errorProcessingPayment => 'ክፍያን በማስኬድ ላይ ስህተት፡';
+  String get errorProcessingPayment => 'ክፍያን በማስኬድ ላይ ስህተት ተፈጥሩአል።';
 
   @override
-  String get errorSelectingImage => 'ምስል በመምረጥ ላይ ስህተት፡';
+  String get errorSelectingImage => 'ምስል በመምረጥ ላይ ስህተት ተፈጥሩአል።';
 
   @override
-  String get couldNotExtractReference => 'ከምስሉ ላይ ማጣቀሻ ማውጣት አልተቻለም። እባክዎ በእጅ ያስገቡት።';
+  String get couldNotExtractReference => 'ከምስሉ ላይ የደረሰኝ ቁጥር ማውጣት አልተቻለም። እባክዎ ድጋሜ ይሞክሩ ወይም በእጅ ያስገቡት።';
 
   @override
-  String get failedToProcessImage => 'ምስሉን ማካሄድ አልተሳካም። እባክዎ እንደገና ይሞክሩ ወይም ማጣቀሻን በእጅ ያስገቡ።';
+  String get failedToProcessImage => 'ምስሉን ማካሄድ አልተሳካም። እባክዎ እንደገና ይሞክሩ ወይም የደረሰኝ ቁጥር በእጅ ያስገቡ።';
 
   @override
-  String get errorProcessingImage => 'ምስልን በማስኬድ ላይ ስህተት፡';
+  String get errorProcessingImage => 'ምስልን በማስኬድ ላይ ስህተት ተፈጥሩአል እባክዎ እንደገና ይሞክሩ';
 
   @override
-  String get invalidVerificationResponse => 'ልክ ያልሆነ የማረጋገጫ ምላሽ';
+  String get invalidVerificationResponse => 'ልክ ያልሆነ የማረጋገጫ ምላሽ እባክዎ ተፈጥሩአል እንደገና ይሞክሩ';
 
   @override
   String get couldNotVerifyPaymentAmount => 'የክፍያውን መጠን ማረጋገጥ አልተቻለም። እባክዎ እንደገና ይሞክሩ።';
 
   @override
-  String get paymentMustBeAtLeast => 'ክፍያ ቢያንስ መሆን አለበት';
+  String get paymentMustBeAtLeast => 'የክፍያ መጠን ትክክል አይደልም እባክዎን ትክክልኛ መጠን ያስገቡ';
 
   @override
   String get found => 'ተገኝቷል';
@@ -311,19 +311,19 @@ class AppLocalizationsAm extends AppLocalizations {
   String get paymentVerificationFailed => 'የክፍያ ማረጋገጫ አልተሳካም። እባክዎ ወደ ትክክለኛው ተቀባይ መላክዎን ያረጋግጡ።';
 
   @override
-  String get couldNotDetermineTransactionReference => 'የግብይት ማጣቀሻን መወሰን አልተቻለም';
+  String get couldNotDetermineTransactionReference => 'የግብይት ደረሰኝ ቁጥር መወሰን አልተቻለም';
 
   @override
-  String get enterValidReferenceNumber => 'እባክዎ ትክክለኛ የማጣቀሻ ቁጥር ያስገቡ';
+  String get enterValidReferenceNumber => 'እባክዎ ትክክለኛ ደረሰኝ ቁጥር ያስገቡ';
 
   @override
-  String get verificationFailed => 'ማረጋገጫ አልተሳካም';
+  String get verificationFailed => 'የማረጋገጥ ሂደት አልተሳካም እባክዎን እንደገና ይሞክሩ';
 
   @override
-  String get errorVerifyingPayment => 'ክፍያን በማረጋገጥ ላይ ስህተት፡';
+  String get errorVerifyingPayment => 'የማረጋገጥ ሂደት አልተሳካም እባክዎን እንደገና ይሞክሩ፡';
 
   @override
-  String get referenceNumber => 'የማጣቀሻ ቁጥር';
+  String get referenceNumber => 'የማጣቀሻ የደረሰኝ ቁጥር';
 
   @override
   String get extractedFromReceipt => 'ከደረሰኝ የተወሰደ';
@@ -332,31 +332,31 @@ class AppLocalizationsAm extends AppLocalizations {
   String get verifyPayment => 'ክፍያን አረጋግጥ';
 
   @override
-  String get goPremium => 'ፕሪሚየም ይሂዱ';
+  String get goPremium => 'የነጳ ሙከራ ግዜዎ አልቁዋል';
 
   @override
-  String get freeAccessEnded => 'የነጻ መዳረሻዎ አብቅቷል። በዓመት ዕቅድ ያልተገደበ መዳረሻን ይክፈቱ።';
+  String get freeAccessEnded => 'በዓመት ዕቅድ ያልተገደበ መዳረሻን ይክፈቱ።';
 
   @override
   String get yearly => 'ዓመታዊ';
 
   @override
-  String get oneYearFullAccess => 'የ1 ዓመት ሙሉ መዳረሻ';
+  String get oneYearFullAccess => 'የ1 ዓመት አገልግሎት ያገኛሉ';
 
   @override
-  String get unlimitedPeopleAndDubes => 'ያልተገደበ ሰዎች እና ዱቤዎች';
+  String get unlimitedPeopleAndDubes => 'ያልተገደበ ሰዎች እና ዱቤዎች መመዝገብ';
 
   @override
-  String get cloudBackupAndRestore => 'የደመና ምትኬ እና እነበረበት መልስ';
+  String get cloudBackupAndRestore => 'ክላውድ ላይ ማስቀመጥ';
 
   @override
   String get priorityUpdates => 'የቅድሚያ ዝመናዎች';
 
   @override
-  String get whyUpgrade => 'ለምን አሻሽል?';
+  String get whyUpgrade => 'ለምን ይክፈሉ?';
 
   @override
-  String get payStepsTitle => 'እንዴት መክፈል እንደሚቻል';
+  String get payStepsTitle => 'የአከፋፈል ሂደት';
 
   @override
   String get payStep1 => 'ከሚከተሉት መክፈያ መንገዶች አንዱን ይምረጡ፡፡';
@@ -368,13 +368,13 @@ class AppLocalizationsAm extends AppLocalizations {
   String get payStep3 => 'የግብይት መለያ ያስቀምጡ ወይም ስክሪንሾት ይውሰዱ።';
 
   @override
-  String get payStep4 => 'ወደ አፕ ተመለስተው መለያውን ያስገቡ ወይም ስክሪንሾት ያስገቡ።';
+  String get payStep4 => 'ወደ እዚህ ገጽ ተመለስው መለያውን ያስገቡ ወይም ስክሪንሾት ያስገቡ።';
 
   @override
   String get payStep5 => 'የመክፈያ ማረጋገጫን ይጫኑ።';
 
   @override
-  String get keepHistorySafe => 'ታሪክዎን በደመና ምትኬዎች ደህንነቱ የተጠበቀ ያድርጉት';
+  String get keepHistorySafe => 'ታሪክዎን ክላውድ ደህንነቱ የተጠበቀ ያድርጉት';
 
   @override
   String get trackWithoutLimits => 'ዓመቱን በሙሉ ያለገደብ ይከታተሉ';
@@ -383,13 +383,13 @@ class AppLocalizationsAm extends AppLocalizations {
   String get supportOngoingDevelopment => 'ድጋፍ የሚያደርጉትን ልማት ይደግፉ';
 
   @override
-  String get howToPayTitle => 'እንዴት እንደሚከፈል (በእርምጃ በእርምጃ)';
+  String get howToPayTitle => 'የአከፋፈል ሂደት';
 
   @override
   String get howToPayStep1 => 'ከታች ካሉት አማራጮች አንዱን በመጠቀም ክፍያውን ያድርጉ።';
 
   @override
-  String get howToPayStep2 => 'After payment, copy the Transaction ID or Reference Number.';
+  String get howToPayStep2 => 'ከክፍያ በኋላ የግብይት መታወቂያ ወይም የደረሰኝ ቁጥር ይጻፉ።';
 
   @override
   String get howToPayStep3 => 'እዚህ ተመልሰው መለያውን ያስገቡ እና ፕሪሚየም ይክፈቱ።';
@@ -434,26 +434,52 @@ class AppLocalizationsAm extends AppLocalizations {
   String get extractedReference => 'የተወሰደ ማጣቀሻ';
 
   @override
-  String get needHelpContactSupport => 'እገዛ እፈልጋለሁ? እባክዎት support@example.com ያናግሩ።';
+  String get needHelpContactSupport => 'እርዳታ ይፈልጋሉ? ያግኙን።';
 
   @override
-  String get helpContactDetail => 'ማንኛውንም ጥያቄ፣ ችግር፣ ወይም አስተያየት ካለዎት፣ ከታች የቀረበውን የእውቂያ መረጃ በመጠቀም ያናግሩን።';
+  String get emailSupport => 'ኢሜል ደግፎ';
 
   @override
-  String get emailSupport => 'ኢሜይል';
+  String get supportEmail => 'ድጋፍ@dubeapp.example';
 
   @override
-  String get supportEmail => 'support@dubeapp.example';
+  String get faqHeader => 'ተደጋጋሚ ጥያቄዎች';
 
   @override
-  String get faqHeader => 'የተደጋጋሚ ጥያቄዎች';
+  String get faqAddPerson => '• ሰው ለመጨመር ወደ መነሻ ገጽ በመሄድ የ\'+\' ቁልፉን ይንኩ።';
 
   @override
-  String get faqAddPerson => '• ሰው እንዴት እንደሚጨምር? በመነሻ ገጽ ያለውን መያዣ ቦታ ይጠቀሙ።';
+  String get faqViewDubes => '• ሁሉንም ዱቤዎችዎን ለማየት ከመነሻ ገጽ ሰው ይምረጡ።';
 
   @override
-  String get faqViewDubes => '• ዱቤዎችን እንዴት እንደሚመለከቱ? ሰውን ይጫኑ።';
+  String get faqEditDeleteDube => '• ዱቤን ለመስተካከል ወይም ለማስወገድ ረዘም ላለ ጊዜ ይጫኑ።';
 
   @override
-  String get faqEditDeleteDube => '• ዱቤን እንዴት እንደሚያስተካክሉ/ይሰርዙ? በእያንዳንዱ እቃ ላይ ያለውን ምናሌ ይጠቀሙ።';
+  String get personExistsTitle => 'ሰው አለ፣ እንደገና ለመጨመር ትፈልጋለህ?';
+
+  @override
+  String revivePersonPrompt(Object name) {
+    return '$name የተባለ ሰው ከዜማ ውስጥ ነው። እንደገና ለማስጀመር ይፈልጋሉ?';
+  }
+
+  @override
+  String get revive => 'እንደገና ጀምር';
+
+  @override
+  String personExistsMessage(Object name) {
+    return '$name የተባለ ሰው ቀድሞ አለ። ወደ ዱቤዎቻቸው መሄድ ይፈልጋሉ?';
+  }
+
+  @override
+  String get openExisting => 'አሁን ያለውን ክፈት';
+
+  @override
+  String personRevived(Object name) {
+    return '$name እንደገና ተጀምሯል';
+  }
+
+  @override
+  String personAlreadyActive(Object name) {
+    return '$name አስቀድሞ ነቅቶ ነው';
+  }
 }

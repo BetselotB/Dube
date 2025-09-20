@@ -944,17 +944,86 @@ abstract class AppLocalizations {
   /// No description provided for @needHelpContactSupport.
   ///
   /// In en, this message translates to:
-  /// **'Need help? Contact support@example.com'**
+  /// **'Need help? Contact us at:'**
   String get needHelpContactSupport;
 
-  /// Additional localizations for profile/help/FAQ
-  String get helpContactDetail;
+  /// No description provided for @emailSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Support'**
   String get emailSupport;
+
+  /// No description provided for @supportEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'support@dubeapp.example'**
   String get supportEmail;
+
+  /// No description provided for @faqHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently Asked Questions'**
   String get faqHeader;
+
+  /// No description provided for @faqAddPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'• To add a person, go to the Home tab and tap the \'+\' button.'**
   String get faqAddPerson;
+
+  /// No description provided for @faqViewDubes.
+  ///
+  /// In en, this message translates to:
+  /// **'• View all your dubes by selecting a person from the Home tab.'**
   String get faqViewDubes;
+
+  /// No description provided for @faqEditDeleteDube.
+  ///
+  /// In en, this message translates to:
+  /// **'• Long press on a dube to edit or delete it.'**
   String get faqEditDeleteDube;
+
+  /// No description provided for @personExistsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Person Exists'**
+  String get personExistsTitle;
+
+  /// No description provided for @revivePersonPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'A person named \"{name}\" was previously completed. Would you like to revive them?'**
+  String revivePersonPrompt(Object name);
+
+  /// No description provided for @revive.
+  ///
+  /// In en, this message translates to:
+  /// **'Revive'**
+  String get revive;
+
+  /// No description provided for @personExistsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A person named \"{name}\" already exists. Would you like to go to their dubes?'**
+  String personExistsMessage(Object name);
+
+  /// No description provided for @openExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Existing'**
+  String get openExisting;
+
+  /// No description provided for @personRevived.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has been revived'**
+  String personRevived(Object name);
+
+  /// No description provided for @personAlreadyActive.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is already active'**
+  String personAlreadyActive(Object name);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -92,18 +92,14 @@ class HelpFaqPage extends StatelessWidget {
             AppLocalizations.of(context)!.needHelpContactSupport,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.helpContactDetail,
-          ),
           const SizedBox(height: 16),
           Card(
             child: ListTile(
               leading: const Icon(Icons.phone_outlined),
               title: Text(AppLocalizations.of(context)!.phoneNumber),
-              subtitle: const Text('+1 (555) 123-4567'), // Keep as is, or localize if needed
+              subtitle: const Text('+251 90 064 7953'),
               onTap: () async {
-                final uri = Uri(scheme: 'tel', path: '+15551234567');
+                final uri = Uri(scheme: 'tel', path: '+251900647953');
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri);
                 }
@@ -119,7 +115,7 @@ class HelpFaqPage extends StatelessWidget {
               onTap: () async {
                 final uri = Uri(
                   scheme: 'mailto',
-                  path: 'support@dubeapp.example',
+                  path: AppLocalizations.of(context)!.supportEmail,
                   query: Uri.encodeQueryComponent('subject=Support Request'),
                 );
                 if (await canLaunchUrl(uri)) {

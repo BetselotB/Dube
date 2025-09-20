@@ -6,6 +6,7 @@ import 'package:dube/pages/homepage/settings.dart';
 import 'package:dube/pages/homepage/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:share_plus/share_plus.dart';
 // Removed third-party bottom nav; using a modal bottom sheet for navigation
 import '../../src/local_sqlite.dart';
 import '../auth/auth.dart';
@@ -65,25 +66,128 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _addPerson() async {
+    if (!mounted) return;
+    
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
-    await LocalSqlite.insertPerson(name);
-    _nameCtrl.clear();
-    await _loadPeople();
-
-    // find newly created person id to open dubes page
-    final rows = await LocalSqlite.getAllPeople(search: name);
-    final created = rows.firstWhere(
-      (r) => (r['name'] ?? '') == name,
-      orElse: () => {},
-    );
-    if (created.isNotEmpty) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              DubesPage(personId: created['id'], personName: created['name']),
-        ),
-      );
+    
+    try {
+      // Check if person with this name exists
+      final existing = await LocalSqlite.findPersonByName(name, includeDeleted: true);
+      
+      if (existing != null) {
+        if (existing['deleted'] == 1) {
+          // Ask if user wants to revive this person
+          final revive = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: Text(AppLocalizations.of(context)!.personExistsTitle),
+              content: Text(AppLocalizations.of(context)!.revivePersonPrompt(name)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(c).pop(false),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(c).pop(true),
+                  child: Text(AppLocalizations.of(context)!.revive),
+                ),
+              ],
+            ),
+          );
+          
+          if (revive != true || !mounted) return;
+          
+          // Revive the person
+          final revivedPerson = await LocalSqlite.insertPerson(name);
+          if (!mounted) return;
+          
+          if (revivedPerson != null) {
+            _nameCtrl.clear();
+            await _loadPeople();
+            
+            if (!mounted) return;
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => DubesPage(
+                  personId: revivedPerson['id'],
+                  personName: revivedPerson['name'],
+                ),
+              ),
+            );
+            // Reload the people list when coming back
+            if (mounted) {
+              await _loadPeople();
+            }
+          }
+          return;
+        } else {
+          // Person exists and is active
+          if (!mounted) return;
+          
+          final shouldOpen = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: Text(AppLocalizations.of(context)!.personExistsTitle),
+              content: Text(AppLocalizations.of(context)!.personExistsMessage(name)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(c).pop(false),
+                  child: Text(AppLocalizations.of(context)!.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(c).pop(true),
+                  child: Text(AppLocalizations.of(context)!.openExisting),
+                ),
+              ],
+            ),
+          );
+          
+          if (shouldOpen == true && mounted) {
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => DubesPage(
+                  personId: existing['id'],
+                  personName: existing['name'],
+                ),
+              ),
+            );
+            // Reload the people list when coming back
+            if (mounted) {
+              await _loadPeople();
+            }
+          }
+          return;
+        }
+      }
+      
+      // If we get here, it's a new person
+      final person = await LocalSqlite.insertPerson(name);
+      if (!mounted) return;
+      
+      _nameCtrl.clear();
+      await _loadPeople();
+      
+      if (person != null && mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => DubesPage(
+              personId: person['id'],
+              personName: person['name'],
+            ),
+          ),
+        );
+        // Reload the people list when coming back
+        if (mounted) {
+          await _loadPeople();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -91,8 +195,8 @@ class _HomePageState extends State<HomePage> {
     final ok = await showDialog<bool?>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.paidPerson),
-        content: Text(AppLocalizations.of(context)!.didPersonPay),
+        title: Text('Mark as Completed?'),
+        content: Text('This will move this person to the completed section. Continue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(c).pop(false),
@@ -100,7 +204,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(c).pop(true),
-            child: Text(AppLocalizations.of(context)!.yes),
+            child: Text('Mark as Completed'),
           ),
         ],
       ),
@@ -108,6 +212,30 @@ class _HomePageState extends State<HomePage> {
     if (ok != true) return;
     await LocalSqlite.deletePerson(id);
     await _loadPeople();
+  }
+  
+  Future<void> _markAllDubesAsPaid(String personId) async {
+    try {
+      // Get all unpaid dubes for this person
+      final dubes = await LocalSqlite.getDubesForPerson(personId, showPaid: false);
+      
+      // Mark each dube as paid
+      for (final dube in dubes) {
+        await LocalSqlite.markDubeAsPaid(dube['id']);
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All dubes marked as paid')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error marking dubes as paid: $e')),
+        );
+      }
+    }
   }
 
   Widget _buildDrawer(User user) {
@@ -186,7 +314,25 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(
       context,
     ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthPage()));
+  }Future<void> _shareApp() async {
+  const url = 'https://www.youtube.com/';
+  final text = 'Check out this app! $url';
+
+  try {
+    // Share basic text + url
+    await Share.share(text, subject: 'My App');
+    // optional: show a confirmation
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Share sheet opened')),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to share: $e')),
+    );
   }
+}
 
   // removed obsolete bottom sheet switcher (replaced by PageView + FAB)
 
@@ -247,6 +393,7 @@ class _HomePageState extends State<HomePage> {
             showSelectedIcon: false,
           ),
         ),
+        SizedBox(height: 6),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: TextField(
@@ -297,13 +444,24 @@ class _HomePageState extends State<HomePage> {
                         trailing: _showDeleted
                             ? null
                             : PopupMenuButton<String>(
-                                onSelected: (v) {
-                                  if (v == 'paid') _deletePerson(p.id);
+                                onSelected: (v) async {
+                                  if (v == 'mark_completed') {
+                                    // Mark person as completed (moves to paid section)
+                                    await _deletePerson(p.id);
+                                  } else if (v == 'mark_all_paid') {
+                                    // Mark all person's dubes as paid but keep in active list
+                                    await _markAllDubesAsPaid(p.id);
+                                    await _loadPeople();
+                                  }
                                 },
                                 itemBuilder: (_) => [
                                   PopupMenuItem(
-                                    value: 'paid',
-                                    child: Text(AppLocalizations.of(context)!.paid),
+                                    value: 'mark_completed',
+                                    child: Text('Mark as Completed'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'mark_all_paid',
+                                    child: Text('Mark All Dubes as Paid'),
                                   ),
                                 ],
                               ),
@@ -384,13 +542,24 @@ class _HomePageState extends State<HomePage> {
                         trailing: _showDeleted
                             ? null
                             : PopupMenuButton<String>(
-                                onSelected: (v) {
-                                  if (v == 'paid') _deletePerson(p.id);
+                                onSelected: (v) async {
+                                  if (v == 'mark_completed') {
+                                    // Mark person as completed (moves to paid section)
+                                    await _deletePerson(p.id);
+                                  } else if (v == 'mark_all_paid') {
+                                    // Mark all person's dubes as paid but keep in active list
+                                    await _markAllDubesAsPaid(p.id);
+                                    await _loadPeople();
+                                  }
                                 },
                                 itemBuilder: (_) => [
                                   PopupMenuItem(
-                                    value: 'paid',
-                                    child: Text(AppLocalizations.of(context)!.paid),
+                                    value: 'mark_completed',
+                                    child: Text('Mark as Completed'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'mark_all_paid',
+                                    child: Text('Mark All Dubes as Paid'),
                                   ),
                                 ],
                               ),
@@ -433,9 +602,9 @@ class _HomePageState extends State<HomePage> {
         title: Text(AppLocalizations.of(context)!.whoOwesYou),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.share),
             tooltip: AppLocalizations.of(context)!.logout,
-            onPressed: _logout,
+            onPressed: _shareApp,
           ),
         ],
       ),

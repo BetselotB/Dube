@@ -144,5 +144,46 @@
   "accountSuffix": "Account suffix",
   "phoneNumber": "Phone number",
   "extractedReference": "Extracted reference",
-  "needHelpContactSupport": "Need help? Contact support@example.com"
+  "needHelpContactSupport": "Need help? Contact us at:",
+  "emailSupport": "Email Support",
+  "supportEmail": "support@dubeapp.example",
+  "faqHeader": "Frequently Asked Questions",
+  "faqAddPerson": "• To add a person, go to the Home tab and tap the '+' button.",
+  "faqViewDubes": "• View all your dubes by selecting a person from the Home tab.",
+  "faqEditDeleteDube": "• Long press on a dube to edit or delete it.",
+  
+  "@personExistsTitle": {},
+  "personExistsTitle": "Person Exists",
+  
+  "@revivePersonPrompt": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "revivePersonPrompt": "A person named \"{name}\" was previously completed. Would you like to revive them?",
+  
+  "revive": "Revive",
+  
+  "@personExistsMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "personExistsMessage": "A person named \"{name}\" already exists. Would you like to go to their dubes?",
+  
+  "openExisting": "Open Existing",
+  
+  "@personRevived": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "personRevived": "{name} has been revived",
+  
+  "@personAlreadyActive": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "personAlreadyActive": "{name} is already active"
 }

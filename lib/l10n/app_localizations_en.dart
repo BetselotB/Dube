@@ -434,20 +434,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractedReference => 'Extracted reference';
 
   @override
-  String get needHelpContactSupport => 'Need help? Contact support@example.com';
+  String get needHelpContactSupport => 'Need help? Contact us at:';
 
   @override
-  String get helpContactDetail => 'If you have any questions, issues, or feedback, please reach out to us using the contact information below.';
-  @override
-  String get emailSupport => 'Email';
+  String get emailSupport => 'Email Support';
+
   @override
   String get supportEmail => 'support@dubeapp.example';
+
   @override
-  String get faqHeader => 'FAQ';
+  String get faqHeader => 'Frequently Asked Questions';
+
   @override
-  String get faqAddPerson => '• How do I add a person? Use the Home screen add field.';
+  String get faqAddPerson => '• To add a person, go to the Home tab and tap the \'+\' button.';
+
   @override
-  String get faqViewDubes => '• How do I view dubes? Tap a person to open their dubes.';
+  String get faqViewDubes => '• View all your dubes by selecting a person from the Home tab.';
+
   @override
-  String get faqEditDeleteDube => '• How do I edit/delete a dube? Use the menu on each item.';
+  String get faqEditDeleteDube => '• Long press on a dube to edit or delete it.';
+
+  @override
+  String get personExistsTitle => 'Person Exists';
+
+  @override
+  String revivePersonPrompt(Object name) {
+    return 'A person named \"$name\" was previously completed. Would you like to revive them?';
+  }
+
+  @override
+  String get revive => 'Revive';
+
+  @override
+  String personExistsMessage(Object name) {
+    return 'A person named \"$name\" already exists. Would you like to go to their dubes?';
+  }
+
+  @override
+  String get openExisting => 'Open Existing';
+
+  @override
+  String personRevived(Object name) {
+    return '$name has been revived';
+  }
+
+  @override
+  String personAlreadyActive(Object name) {
+    return '$name is already active';
+  }
 }

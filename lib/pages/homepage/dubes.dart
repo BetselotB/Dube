@@ -119,7 +119,7 @@ class _DubesPageState extends State<DubesPage> {
   // ---------- Dubes ----------
   Future<void> _loadDubes() async {
     if (widget.personId == null) return;
-    final rows = await LocalSqlite.getDubesForPerson(
+    final rows = await LocalSqlite.getAllDubesForPerson(
       widget.personId!,
       search: _searchCtrl.text,
     );
@@ -260,56 +260,139 @@ class _DubesPageState extends State<DubesPage> {
     );
 
     if (confirmed == true) {
-      // Here you would update your database to mark this item as paid
-      // For now, we'll just remove it from the list
-      await LocalSqlite.deleteDube(id);
+      await LocalSqlite.markDubeAsPaid(id);
       await _loadDubes();
+      
+      // Refresh the parent page to update the total
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    }
+  }
+  
+  Future<void> _markAllAsPaid() async {
+    if (widget.personId == null) return;
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Mark All as Paid'),
+        content: const Text('Are you sure you want to mark all dubes as paid?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(c).pop(true),
+            child: const Text('Mark All Paid'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirmed != true) return;
+    
+    try {
+      // Get all unpaid dubes for this person
+      final dubes = await LocalSqlite.getDubesForPerson(
+        widget.personId!,
+        showPaid: false,
+      );
+      
+      // Mark each dube as paid
+      for (final dube in dubes) {
+        await LocalSqlite.markDubeAsPaid(dube['id']);
+      }
+      
+      if (mounted) {
+        await _loadDubes();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All dubes marked as paid')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error marking dubes as paid: $e')),
+        );
+      }
     }
   }
 
   Widget _buildDubeItem(Map<String, dynamic> d) {
+    final isPaid = d['paid'] == 1;
+    
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      color: isPaid ? Colors.grey[100] : null,
       child: InkWell(
-        onTap: () => _editDube(d).then((_) => _loadDubes()),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      d['itemName'] ?? 'No name',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${d['quantity']} × ${NumberFormat.currency(symbol: 'ETB ').format(d['priceAtTaken'])} = ${NumberFormat.currency(symbol: 'ETB ').format(d['amount'])}',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    if (d['note'] != null && d['note'].toString().isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          d['note'],
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontStyle: FontStyle.italic,
-                                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
-                              ),
+        onTap: widget.readOnly ? null : () => _editDube(d).then((_) => _loadDubes()),
+        child: Opacity(
+          opacity: isPaid ? 0.7 : 1.0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            child: Row(
+              children: [
+                if (isPaid)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 12.0),
+                    child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        d['itemName'] ?? 'No name',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          decoration: isPaid ? TextDecoration.lineThrough : null,
+                          color: isPaid ? Colors.grey[600] : null,
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        '${d['quantity']} × ${NumberFormat.currency(symbol: 'ETB ').format(d['priceAtTaken'])} = ${NumberFormat.currency(symbol: 'ETB ').format(d['amount'])}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isPaid ? Colors.grey[600] : null,
+                        ),
+                      ),
+                      if (d['note'] != null && d['note'].toString().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            d['note'],
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  fontStyle: FontStyle.italic,
+                                  color: isPaid 
+                                    ? Colors.grey[500]
+                                    : Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+                                  decoration: isPaid ? TextDecoration.lineThrough : null,
+                                ),
+                          ),
+                        ),
+                      if (isPaid && d['paidAt'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            'Paid on ${DateFormat('MMM d, y h:mm a').format(DateTime.fromMillisecondsSinceEpoch(d['paidAt']))}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.green[700],
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              if (!widget.readOnly)
-                IconButton(
-                  icon: const Icon(Icons.check_circle_outline, color: Colors.green),
-                  onPressed: () => _markAsPaid(d['id'], (d['amount'] as num).toDouble()),
-                  tooltip: AppLocalizations.of(context)!.markAsPaid,
-                ),
-            ],
+                if (!widget.readOnly && !isPaid)
+                  IconButton(
+                    icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+                    onPressed: () => _markAsPaid(d['id'], (d['amount'] as num).toDouble()),
+                    tooltip: AppLocalizations.of(context)!.markAsPaid,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -404,6 +487,9 @@ class _DubesPageState extends State<DubesPage> {
   }
 
   Widget _buildDubesList() {
+    final unpaidDubes = _dubes.where((d) => d['paid'] != 1).toList();
+    final paidDubes = _dubes.where((d) => d['paid'] == 1).toList()..sort((a, b) => (b['paidAt'] ?? 0).compareTo(a['paidAt'] ?? 0));
+    
     return Column(
       children: [
         Padding(
@@ -429,12 +515,44 @@ class _DubesPageState extends State<DubesPage> {
         Expanded(
           child: _dubes.isEmpty
               ? Center(child: Text(AppLocalizations.of(context)!.noDubesYet))
-              : ListView.builder(
-                  itemCount: _dubes.length,
-                  itemBuilder: (context, i) {
-                    final d = _dubes[i];
-                    return _buildDubeItem(d);
-                  },
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Unpaid items
+                      if (unpaidDubes.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                          child: Text(
+                            'Unpaid (${unpaidDubes.length})',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        ...unpaidDubes.map((d) => _buildDubeItem(d)).toList(),
+                        const SizedBox(height: 16),
+                      ],
+                      
+                      // Paid items section (collapsible)
+                      if (paidDubes.isNotEmpty) ...[
+                        ExpansionTile(
+                          initiallyExpanded: false,
+                          title: Text(
+                            'Paid (${paidDubes.length})',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          children: [
+                            ...paidDubes.map((d) => _buildDubeItem(d)).toList(),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
         ),
       ],
@@ -483,6 +601,15 @@ class _DubesPageState extends State<DubesPage> {
             const SizedBox(height: 12),
             
             // Quantity and price row
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4.0, left: 4.0),
+              child: Text(
+                AppLocalizations.of(context)!.quantity,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).hintColor,
+                ),
+              ),
+            ),
             Row(
               children: [
                 // Quantity controls
@@ -600,6 +727,12 @@ class _DubesPageState extends State<DubesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.personName ?? AppLocalizations.of(context)!.dubes),
+        leading: widget.personId != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
         actions: widget.personId == null
             ? null
             : [
@@ -607,6 +740,44 @@ class _DubesPageState extends State<DubesPage> {
                   onPressed: _addDube,
                   icon: const Icon(Icons.add),
                   tooltip: AppLocalizations.of(context)!.addNewDube,
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (value) async {
+                    if (value == 'mark_completed') {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (c) => AlertDialog(
+                          title: const Text('Mark as Completed?'),
+                          content: const Text('This will move this person to the completed section. Continue?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(c).pop(false),
+                              child: Text(AppLocalizations.of(context)!.cancel),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(c).pop(true),
+                              child: const Text('Mark as Completed'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true && mounted) {
+                        Navigator.of(context).pop(true);
+                      }
+                    } else if (value == 'mark_all_paid') {
+                      await _markAllAsPaid();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'mark_completed',
+                      child: Text('Mark as Completed'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'mark_all_paid',
+                      child: Text('Mark All Dubes as Paid'),
+                    ),
+                  ],
                 ),
               ],
       ),

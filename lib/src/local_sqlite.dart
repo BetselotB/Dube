@@ -18,7 +18,7 @@ class LocalSqlite {
     final path = '${dir.path}/dube_app.db';
    _db = await openDatabase(
   path,
-  version: 2, // bump version for migration
+  version: 3, // bump version for migration (3: added paid/paidAt columns)
   onCreate: (db, version) async {
     await db.execute('''
       CREATE TABLE people (
@@ -40,6 +40,8 @@ class LocalSqlite {
         priceAtTaken REAL DEFAULT 0,
         amount REAL DEFAULT 0,
         note TEXT,
+        paid INTEGER DEFAULT 0,
+        paidAt INTEGER,
         createdAt INTEGER
       );
     ''');
@@ -49,6 +51,15 @@ class LocalSqlite {
       // add userId column to existing tables
       await db.execute('ALTER TABLE people ADD COLUMN userId TEXT DEFAULT ""');
       await db.execute('ALTER TABLE dubes ADD COLUMN userId TEXT DEFAULT ""');
+    }
+    if (oldVersion < 3) {
+      // add paid and paidAt columns to dubes table
+      try {
+        await db.execute('ALTER TABLE dubes ADD COLUMN paid INTEGER DEFAULT 0');
+        await db.execute('ALTER TABLE dubes ADD COLUMN paidAt INTEGER');
+      } catch (e) {
+        // Columns might already exist
+      }
     }
   },
 );
@@ -81,12 +92,53 @@ class LocalSqlite {
     return rows;
   }
 
-  static Future<void> insertPerson(String name) async {
+  static Future<Map<String, dynamic>?> findPersonByName(String name, {bool includeDeleted = true}) async {
     await init();
     final uid = _uid();
+    final rows = await _db!.query(
+      'people',
+      where: 'name = ? AND userId = ?${includeDeleted ? '' : ' AND deleted = 0' }',
+      whereArgs: [name, uid],
+    );
+    return rows.isNotEmpty ? rows.first : null;
+  }
+
+  static Future<Map<String, dynamic>?> insertPerson(String name) async {
+    await init();
+    final uid = _uid();
+    
+    // Check if person with this name exists (including deleted ones)
+    final existing = await findPersonByName(name, includeDeleted: true);
+    
+    if (existing != null) {
+      // If person exists but is deleted, undelete them
+      if (existing['deleted'] == 1) {
+        await _db!.update(
+          'people', 
+          {'deleted': 0, 'total': 0}, 
+          where: 'id = ? AND userId = ?',
+          whereArgs: [existing['id'], uid],
+        );
+        return {...existing, 'deleted': 0};
+      }
+      // If person exists and is not deleted, return null to indicate duplicate
+      return null;
+    }
+    
+    // Create new person
     final id = _uuid.v4();
     final now = DateTime.now().millisecondsSinceEpoch;
-    await _db!.insert('people', {'id': id, 'userId': uid, 'name': name, 'total': 0, 'createdAt': now, 'deleted': 0});
+    final person = {
+      'id': id, 
+      'userId': uid, 
+      'name': name, 
+      'total': 0, 
+      'createdAt': now, 
+      'deleted': 0
+    };
+    
+    await _db!.insert('people', person);
+    return person;
   }
 
   static Future<void> deletePerson(String id) async {
@@ -96,7 +148,18 @@ class LocalSqlite {
   }
 
   // Dubes CRUD
-  static Future<List<Map<String, dynamic>>> getDubesForPerson(String personId, {String search = ''}) async {
+  static Future<List<Map<String, dynamic>>> getDubesForPerson(String personId, {String search = '', bool showPaid = false}) async {
+    await init();
+    final uid = _uid();
+    final where = 'personId = ? AND userId = ? AND paid = ?${search.isNotEmpty ? ' AND (itemName LIKE ? OR note LIKE ?)' : ''}';
+    final args = search.isNotEmpty 
+      ? [personId, uid, showPaid ? 1 : 0, '%$search%', '%$search%'] 
+      : [personId, uid, showPaid ? 1 : 0];
+    final rows = await _db!.query('dubes', where: where, whereArgs: args, orderBy: 'createdAt DESC');
+    return rows;
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllDubesForPerson(String personId, {String search = ''}) async {
     await init();
     final uid = _uid();
     final where = 'personId = ? AND userId = ?${search.isNotEmpty ? ' AND (itemName LIKE ? OR note LIKE ?)' : ''}';
@@ -170,6 +233,41 @@ class LocalSqlite {
     final batch = _db!.batch();
     batch.delete('dubes', where: 'id = ? AND userId = ?', whereArgs: [id, uid]);
     batch.rawUpdate('UPDATE people SET total = total - ? WHERE id = ? AND userId = ?', [amount, personId, uid]);
+    await batch.commit(noResult: true);
+  }
+
+  static Future<void> markDubeAsPaid(String id) async {
+    await init();
+    final uid = _uid();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    
+    // First get the dube to update the person's total
+    final dube = await _db!.query('dubes', 
+      where: 'id = ? AND userId = ? AND paid = 0', // Only process if not already paid
+      whereArgs: [id, uid],
+      columns: ['personId', 'amount']
+    );
+    
+    if (dube.isEmpty) return;
+    
+    final personId = dube.first['personId'] as String;
+    final amount = (dube.first['amount'] as num).toDouble();
+    
+    final batch = _db!.batch();
+    
+    // Mark dube as paid
+    batch.update('dubes', 
+      {'paid': 1, 'paidAt': now},
+      where: 'id = ? AND userId = ?',
+      whereArgs: [id, uid]
+    );
+    
+    // Update person's total by subtracting the paid amount
+    batch.rawUpdate(
+      'UPDATE people SET total = total - ? WHERE id = ? AND userId = ?',
+      [amount, personId, uid]
+    );
+    
     await batch.commit(noResult: true);
   }
 
