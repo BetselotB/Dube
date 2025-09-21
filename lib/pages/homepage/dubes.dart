@@ -45,6 +45,7 @@ class _DubesPageState extends State<DubesPage> {
   final _quantityCtrl = TextEditingController(text: '1');
   final _priceCtrl = TextEditingController();
   int _quantity = 1;
+  String? _selectedUnit;
 
   // No bottom nav here; this page focuses on either people or a person's dubes
 
@@ -568,6 +569,37 @@ class _DubesPageState extends State<DubesPage> {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
+  Future<void> _showUnitSelection() async {
+    final unit = await showDialog<String>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text('Select Unit'),
+        content: Text('Choose the unit for this item:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(c).pop('KG'),
+            child: Text('KG'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop('Liter'),
+            child: Text('Liter'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop('Piece'),
+            child: Text('Piece'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(c).pop(null),
+            child: Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+    if (unit != null && mounted) {
+      setState(() => _selectedUnit = unit);
+    }
+  }
+
   Widget _buildInputForm() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -600,50 +632,39 @@ class _DubesPageState extends State<DubesPage> {
             
             const SizedBox(height: 12),
             
-            // Price and quantity row
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4.0, left: 4.0),
-              child: Text(
-                AppLocalizations.of(context)!.price,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).hintColor,
-                ),
+            // Price field
+            TextField(
+              controller: _priceCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.price,
+                prefixText: 'ETB ',
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                isDense: true,
+                suffixIcon: _priceCtrl.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 18),
+                        onPressed: () => setState(() => _priceCtrl.clear()),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      )
+                    : null,
               ),
+              style: const TextStyle(fontSize: 14),
+              onSubmitted: (_) => _addDube(),
             ),
+            
+            const SizedBox(height: 12),
+            
+            // Quantity, Unit, and Add button row
             Row(
               children: [
-                // Price field
-                Expanded(
-                  child: TextField(
-                    controller: _priceCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.price,
-                      prefixText: 'ETB ',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      isDense: true,
-                      suffixIcon: _priceCtrl.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
-                              onPressed: () => setState(() => _priceCtrl.clear()),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            )
-                          : null,
-                    ),
-                    style: const TextStyle(fontSize: 14),
-                    onSubmitted: (_) => _addDube(),
-                  ),
-                ),
-                
-                const SizedBox(width: 12),
-                
                 // Quantity controls
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(4.0),
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -662,7 +683,7 @@ class _DubesPageState extends State<DubesPage> {
                       
                       // Quantity display
                       SizedBox(
-                        width: 40,
+                        width: 50,
                         child: TextField(
                           controller: _quantityCtrl,
                           textAlign: TextAlign.center,
@@ -699,17 +720,30 @@ class _DubesPageState extends State<DubesPage> {
                   ),
                 ),
                 
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
+                
+                // Unit selection button
+                OutlinedButton(
+                  onPressed: _showUnitSelection,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: Text(_selectedUnit ?? 'Unit', style: const TextStyle(fontSize: 12)),
+                ),
+                
+                const SizedBox(width: 8),
                 
                 // Add button
-                SizedBox(
-                  height: 48,
+                Expanded(
                   child: FilledButton.tonalIcon(
                     onPressed: _addDube,
-                    icon: const Icon(Icons.add, size: 20),
-                    label: Text(AppLocalizations.of(context)!.add, style: const TextStyle(fontSize: 14)),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(AppLocalizations.of(context)!.add, style: const TextStyle(fontSize: 12)),
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

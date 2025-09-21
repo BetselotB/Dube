@@ -256,6 +256,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
     }
   }
 
+
   Future<void> _deletePerson(String id) async {
     final ok = await showDialog<bool?>(
       context: context,
